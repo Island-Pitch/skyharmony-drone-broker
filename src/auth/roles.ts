@@ -1,3 +1,4 @@
+/** Platform roles mapped from tech-design-input-doc.txt section 2. */
 export enum Role {
   CentralRepoAdmin = 'CentralRepoAdmin',
   OperatorAdmin = 'OperatorAdmin',
@@ -6,6 +7,7 @@ export enum Role {
   SystemAI = 'SystemAI',
 }
 
+/** Granular permissions checked by RouteGuard and service layer. */
 export enum Permission {
   AssetCreate = 'asset:create',
   AssetRead = 'asset:read',
@@ -65,6 +67,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
 };
 
+/** Check whether a role includes a specific permission. */
 export function hasPermission(role: Role, permission: Permission): boolean {
   return ROLE_PERMISSIONS[role].includes(permission);
 }
