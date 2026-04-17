@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+/** Valid lifecycle states for any asset in the catalog. */
 export const AssetStatus = z.enum([
   'available',
   'allocated',
@@ -10,6 +11,7 @@ export const AssetStatus = z.enum([
 
 export type AssetStatusValue = z.infer<typeof AssetStatus>;
 
+/** Config-driven asset type (e.g. "drone", "battery"). Adding a new type requires zero code changes. */
 export const AssetTypeSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -20,6 +22,7 @@ export const AssetTypeSchema = z.object({
 
 export type AssetType = z.infer<typeof AssetTypeSchema>;
 
+/** Polymorphic asset record. Drones are Type 1; base stations, batteries, etc. follow the same shape. */
 export const AssetSchema = z.object({
   id: z.string().uuid(),
   asset_type_id: z.string().uuid(),
@@ -39,6 +42,7 @@ export const AssetSchema = z.object({
 
 export type Asset = z.infer<typeof AssetSchema>;
 
+/** Input schema for POST /fleet — no id or timestamps (server-generated). */
 export const CreateAssetInputSchema = z.object({
   asset_type_id: z.string().uuid(),
   serial_number: z.string(),
@@ -53,6 +57,7 @@ export const CreateAssetInputSchema = z.object({
 
 export type CreateAssetInput = z.infer<typeof CreateAssetInputSchema>;
 
+/** Input schema for PATCH /fleet/:id — all fields optional for partial update. */
 export const UpdateAssetInputSchema = z.object({
   status: AssetStatus.optional(),
   firmware_version: z.string().optional(),

@@ -25,6 +25,7 @@ export interface AssetFilters {
   search?: string;
 }
 
+/** Repository contract for asset persistence. Swap InMemoryAssetRepository for an HTTP client to connect a real backend. */
 export interface IAssetRepository {
   findById(id: string): Promise<Asset | undefined>;
   findAll(): Promise<Asset[]>;
