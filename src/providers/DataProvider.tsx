@@ -1,6 +1,8 @@
 import { createContext, useMemo, type ReactNode } from 'react';
 import { InMemoryAssetRepository } from '@/data/repositories/InMemoryAssetRepository';
 import { AssetService } from '@/services/AssetService';
+import { seedStore } from '@/data/seed';
+import { store } from '@/data/store';
 import type { IAssetRepository } from '@/data/repositories/interfaces';
 
 export interface DataContextValue {
@@ -16,6 +18,10 @@ interface DataProviderProps {
 
 export function DataProvider({ children }: DataProviderProps) {
   const value = useMemo(() => {
+    // Seed data if store is empty
+    if (store.assets.size === 0) {
+      seedStore();
+    }
     const assetRepo = new InMemoryAssetRepository();
     const assetService = new AssetService(assetRepo);
     return { assetRepo, assetService };

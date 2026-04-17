@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect } from 'vitest';
 import { App } from './App';
@@ -14,14 +14,16 @@ describe('App', () => {
     expect(screen.getByText('Drone Broker')).toBeInTheDocument();
   });
 
-  it('renders dashboard by default', () => {
+  it('renders dashboard by default', async () => {
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
         <App />
       </MemoryRouter>,
     );
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByText('Active Drones')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Total Assets')).toBeInTheDocument();
+    });
   });
 
   it('renders navigation links for all routes', () => {
