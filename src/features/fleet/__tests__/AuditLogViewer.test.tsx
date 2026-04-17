@@ -22,8 +22,8 @@ describe('AuditLogViewer', () => {
     ];
 
     render(<AuditLogViewer events={events} />);
-    expect(screen.getByText(/available/)).toBeInTheDocument();
-    expect(screen.getByText(/allocated/)).toBeInTheDocument();
+    expect(screen.getByText('in_transit')).toBeInTheDocument();
+    expect(screen.getAllByText('available')).toHaveLength(1);
   });
 
   it('shows empty state when no events', () => {

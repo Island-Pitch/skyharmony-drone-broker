@@ -14,6 +14,8 @@ describe('AuditService', () => {
 
   beforeEach(() => {
     store.reset();
+    auditRepo = new InMemoryAuditRepository();
+    auditRepo.reset();
     store.assetTypes.set(droneTypeId, {
       id: droneTypeId,
       name: 'drone',
