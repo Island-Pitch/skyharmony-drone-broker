@@ -44,7 +44,8 @@ describe('AssetTypeSchema', () => {
   });
 
   it('rejects asset type with missing name', () => {
-    const { name: _, ...noName } = validAssetType;
+    const noName = { ...validAssetType } as Record<string, unknown>;
+    delete noName.name;
     const result = AssetTypeSchema.safeParse(noName);
     expect(result.success).toBe(false);
   });
@@ -123,7 +124,8 @@ describe('AssetSchema', () => {
   });
 
   it('rejects missing serial_number', () => {
-    const { serial_number: _, ...noSerial } = validAsset;
+    const noSerial = { ...validAsset } as Record<string, unknown>;
+    delete noSerial.serial_number;
     const result = AssetSchema.safeParse(noSerial);
     expect(result.success).toBe(false);
   });
