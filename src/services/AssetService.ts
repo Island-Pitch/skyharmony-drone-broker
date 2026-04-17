@@ -2,6 +2,7 @@ import type { Asset } from '@/data/models/asset';
 import { CreateAssetInputSchema, UpdateAssetInputSchema } from '@/data/models/asset';
 import type { IAssetRepository } from '@/data/repositories/interfaces';
 
+/** Service layer for asset CRUD. Validates input with Zod before delegating to the repository. */
 export class AssetService {
   constructor(private readonly assetRepo: IAssetRepository) {}
 

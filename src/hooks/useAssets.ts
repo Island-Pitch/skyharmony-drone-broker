@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useContext } from 'react';
 import { DataContext } from '@/providers/DataProvider';
 import type { Asset, CreateAssetInput, UpdateAssetInput } from '@/data/models/asset';
 
+/** Hook providing asset CRUD operations with loading/error states. Reads from DataProvider context. */
 export function useAssets() {
   const ctx = useContext(DataContext);
   if (!ctx) throw new Error('useAssets must be used within a DataProvider');
