@@ -65,7 +65,8 @@ describe('Fleet', () => {
     });
   });
 
-  it('renders empty state when no assets', async () => {
+  it('renders seeded assets when store starts empty', async () => {
+    // DataProvider auto-seeds when store is empty
     store.reset();
     render(
       <MemoryRouter>
@@ -77,7 +78,8 @@ describe('Fleet', () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
-      expect(screen.getByText(/no assets/i)).toBeInTheDocument();
+      // Should have seeded data, not empty state
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
   });
 });
