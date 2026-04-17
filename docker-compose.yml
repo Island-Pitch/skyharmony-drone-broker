@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+
+  api:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    ports:
+      - "4000:4000"
+    command: ["node", "server.js"]
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
