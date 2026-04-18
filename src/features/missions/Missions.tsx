@@ -1,29 +1,18 @@
 export function Missions() {
-  const missions = [
-    { id: 'MSN-101', type: 'Survey', area: 'Zone A', drone: 'DRN-001', progress: 72 },
-    { id: 'MSN-102', type: 'Delivery', area: 'Zone C', drone: 'DRN-004', progress: 35 },
-    { id: 'MSN-103', type: 'Inspection', area: 'Zone B', drone: null, progress: 0 },
-  ];
-
   return (
-    <div className="page missions">
-      <h2>Mission Control</h2>
-      <div className="mission-list">
-        {missions.map((m) => (
-          <div key={m.id} className="mission-card">
-            <div className="mission-header">
-              <strong>{m.id}</strong>
-              <span className="mission-type">{m.type}</span>
-            </div>
-            <div className="mission-details">
-              <span>Area: {m.area}</span>
-              <span>Drone: {m.drone ?? 'Unassigned'}</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${m.progress}%` }} />
-            </div>
-          </div>
-        ))}
+    <div className="page coming-soon-page">
+      <div className="coming-soon-container">
+        <div className="coming-soon-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <h2>Mission Control</h2>
+        <p className="coming-soon-label">Coming Soon</p>
+        <p className="coming-soon-description">
+          Real-time mission planning, waypoint routing, and live drone telemetry.
+          Coordinate multi-drone formations across show sites.
+        </p>
       </div>
     </div>
   );

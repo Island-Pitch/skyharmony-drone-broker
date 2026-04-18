@@ -1,12 +1,34 @@
 import type { ComponentType } from 'react';
-import { Dashboard } from '@/features/dashboard/Dashboard';
 import { Fleet } from '@/features/fleet/Fleet';
 import { Missions } from '@/features/missions/Missions';
 import { Marketplace } from '@/features/marketplace/Marketplace';
+import { Bookings } from '@/features/bookings/Bookings';
+import { BillingDashboard } from '@/features/billing/BillingDashboard';
+import { ScanPage } from '@/features/scan/ScanPage';
+import { AllocationPanel } from '@/features/allocation/AllocationPanel';
+import { IncidentsPage } from '@/features/incidents/IncidentsPage';
+import { LogisticsPage } from '@/features/logistics/LogisticsPage';
+import { MaintenancePage } from '@/features/maintenance/MaintenancePage';
+import { ForecastingPage } from '@/features/forecasting/ForecastingPage';
+import { TelemetryPage } from '@/features/telemetry/TelemetryPage';
+import { OperatorDashboard } from '@/features/operator-dashboard/OperatorDashboard';
+import { SettlementsPage } from '@/features/settlements/SettlementsPage';
+import { AdminDashboard } from '@/features/dashboard/AdminDashboard';
 
 export const routeComponents: Record<string, ComponentType> = {
-  dashboard: Dashboard,
+  dashboard: AdminDashboard,
+  'operator/dashboard': OperatorDashboard,
   fleet: Fleet,
   missions: Missions,
   marketplace: Marketplace,
+  bookings: Bookings,
+  billing: BillingDashboard,
+  scan: ScanPage,
+  allocation: AllocationPanel,
+  incidents: IncidentsPage,
+  logistics: LogisticsPage,
+  maintenance: MaintenancePage,
+  forecasting: ForecastingPage,
+  telemetry: TelemetryPage,
+  settlements: SettlementsPage,
 };
