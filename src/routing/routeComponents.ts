@@ -10,6 +10,7 @@ import { IncidentsPage } from '@/features/incidents/IncidentsPage';
 import { LogisticsPage } from '@/features/logistics/LogisticsPage';
 import { MaintenancePage } from '@/features/maintenance/MaintenancePage';
 import { OperatorDashboard } from '@/features/operator-dashboard/OperatorDashboard';
+import { SettlementsPage } from '@/features/settlements/SettlementsPage';
 import { AdminDashboard } from '@/features/dashboard/AdminDashboard';
 
 export const routeComponents: Record<string, ComponentType> = {
@@ -25,4 +26,5 @@ export const routeComponents: Record<string, ComponentType> = {
   incidents: IncidentsPage,
   logistics: LogisticsPage,
   maintenance: MaintenancePage,
+  settlements: SettlementsPage,
 };

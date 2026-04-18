@@ -13,6 +13,7 @@ export const appRoutes: AppRoute[] = [
   { path: 'fleet', label: 'Fleet', icon: 'send', nav: ['side', 'top', 'mobile'], permission: Permission.AssetRead },
   { path: 'bookings', label: 'Bookings', icon: 'calendar', nav: ['side', 'top', 'mobile'], permission: Permission.BookingRead },
   { path: 'billing', label: 'Billing', icon: 'dollar-sign', nav: ['side', 'top', 'mobile'], permission: Permission.BillingRead },
+  { path: 'settlements', label: 'Settlements', icon: 'credit-card', nav: ['side', 'mobile'], permission: Permission.BillingRead },
   { path: 'scan', label: 'Scan', icon: 'camera', nav: ['side', 'top', 'mobile'], permission: Permission.ScanCheckIn },
   { path: 'allocation', label: 'Allocation', icon: 'layers', nav: ['side', 'top', 'mobile'], permission: Permission.AssetAllocate },
   { path: 'incidents', label: 'Incidents', icon: 'alert-triangle', nav: ['side', 'mobile'], permission: Permission.IncidentReport },

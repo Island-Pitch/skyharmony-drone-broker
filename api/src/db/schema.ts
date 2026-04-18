@@ -8,6 +8,7 @@ import {
   numeric,
   jsonb,
   boolean,
+  date,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -212,4 +213,25 @@ export const maintenanceTickets = pgTable('maintenance_tickets', {
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
   completed_at: timestamp('completed_at'),
+});
+
+/* ------------------------------------------------------------------ */
+/*  settlements                                                        */
+/* ------------------------------------------------------------------ */
+export const settlements = pgTable('settlements', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  operator_id: uuid('operator_id').references(() => users.id).notNull(),
+  period_start: date('period_start').notNull(),
+  period_end: date('period_end').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('draft'),
+  total_due: numeric('total_due', { precision: 12, scale: 2 }).notNull().default('0'),
+  total_payable: numeric('total_payable', { precision: 12, scale: 2 }).notNull().default('0'),
+  net_amount: numeric('net_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  deductions: jsonb('deductions').notNull().default({}),
+  payment_reference: varchar('payment_reference', { length: 255 }),
+  approved_by: uuid('approved_by').references(() => users.id),
+  approved_at: timestamp('approved_at'),
+  paid_at: timestamp('paid_at'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 });
