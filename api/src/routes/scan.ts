@@ -15,10 +15,12 @@ const LookupSchema = z.object({
 const CheckoutSchema = z.object({
   serial_number: z.string().min(1),
   booking_id: z.string().uuid().optional(),
+  mac_address: z.string().optional(),
 });
 
 const CheckinSchema = z.object({
   serial_number: z.string().min(1),
+  mac_address: z.string().optional(),
 });
 
 // POST /api/scan/lookup
@@ -45,7 +47,7 @@ router.post('/scan/lookup', auth, validate(LookupSchema), async (req, res) => {
 // POST /api/scan/checkout
 router.post('/scan/checkout', auth, validate(CheckoutSchema), async (req, res) => {
   try {
-    const { serial_number, booking_id } = req.body as z.infer<typeof CheckoutSchema>;
+    const { serial_number, booking_id, mac_address } = req.body as z.infer<typeof CheckoutSchema>;
 
     const result = await db.transaction(async (tx) => {
       const [asset] = await tx
@@ -74,6 +76,7 @@ router.post('/scan/checkout', auth, validate(CheckoutSchema), async (req, res) =
         action: 'check_out',
         actor_id: req.user!.userId,
         booking_id: booking_id ?? null,
+        mac_address: mac_address ?? null,
       });
 
       return { ok: true as const, data: updated };
@@ -98,7 +101,7 @@ router.post('/scan/checkout', auth, validate(CheckoutSchema), async (req, res) =
 // POST /api/scan/checkin
 router.post('/scan/checkin', auth, validate(CheckinSchema), async (req, res) => {
   try {
-    const { serial_number } = req.body as z.infer<typeof CheckinSchema>;
+    const { serial_number, mac_address } = req.body as z.infer<typeof CheckinSchema>;
 
     const result = await db.transaction(async (tx) => {
       const [asset] = await tx
@@ -130,6 +133,7 @@ router.post('/scan/checkin', auth, validate(CheckinSchema), async (req, res) => 
         asset_id: asset.id,
         action: 'check_in',
         actor_id: req.user!.userId,
+        mac_address: mac_address ?? null,
       });
 
       return { ok: true as const, data: updated };

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
-import { incidents, assets } from '../db/schema.js';
+import { incidents, assets, maintenanceTickets, auditEvents } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -55,6 +55,22 @@ router.post('/incidents', auth, validate(CreateIncidentSchema), async (req, res)
           .update(assets)
           .set({ status: 'maintenance', updated_at: new Date() })
           .where(eq(assets.id, body.asset_id));
+
+        await tx.insert(maintenanceTickets).values({
+          asset_id: body.asset_id,
+          ticket_type: 'damage',
+          status: 'open',
+          severity: 'mandatory_ground',
+          description: `Auto-created from critical incident: ${body.description}`,
+        });
+
+        await tx.insert(auditEvents).values({
+          asset_id: body.asset_id,
+          field_changed: 'status',
+          old_value: 'allocated',
+          new_value: 'maintenance',
+          changed_by: req.user!.userId,
+        });
       }
 
       return created;

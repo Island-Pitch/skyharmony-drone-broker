@@ -84,7 +84,7 @@ router.get('/fleet/summary', auth, async (req, res) => {
     const active = total - retired;
     const utilization_pct = active > 0 ? Math.round(((allocated + in_transit) / active) * 1000) / 10 : 0;
 
-    res.json({ data: { total_assets: total, by_status, by_type, by_manufacturer, utilization_pct } });
+    res.json({ data: { total_assets: total, by_status, by_type, by_manufacturer, utilization_pct, refreshed_at: new Date().toISOString() } });
   } catch (err) {
     console.error('Fleet summary error:', err);
     res.status(500).json({ error: 'Internal server error' });
