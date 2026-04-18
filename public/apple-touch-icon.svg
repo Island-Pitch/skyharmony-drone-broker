@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A3D62"/>
+      <stop offset="100%" style="stop-color:#071420"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="36" fill="url(#bg)"/>
+  <!-- Koru -->
+  <g transform="translate(90, 105)" opacity="0.15">
+    <path d="M0 0C0 0 -40 -25 -40 -55C-40 -77 -25 -90 0 -90C25 -90 40 -77 40 -55C40 -42 32 -35 20 -35C8 -35 4 -42 4 -50C4 -57 8 -62 16 -62" stroke="#D4A843" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+  <!-- S H monogram -->
+  <text x="90" y="108" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="bold" fill="#F0EDE5" text-anchor="middle">SH</text>
+  <!-- Bottom accent -->
+  <rect x="30" y="140" width="120" height="2" fill="#D4A843" opacity="0.6" rx="1"/>
+</svg>

@@ -1,49 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#060a10"/>
-      <stop offset="40%" style="stop-color:#0A3D62;stop-opacity:0.4"/>
-      <stop offset="100%" style="stop-color:#0B0E14"/>
+      <stop offset="0%" style="stop-color:#071420"/>
+      <stop offset="50%" style="stop-color:#0A3D62"/>
+      <stop offset="100%" style="stop-color:#071420"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
-      <stop offset="0%" style="stop-color:#D4A843;stop-opacity:0.12"/>
-      <stop offset="100%" style="stop-color:#060a10;stop-opacity:0"/>
-    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D4A843"/>
+      <stop offset="50%" style="stop-color:#F0D68A"/>
+      <stop offset="100%" style="stop-color:#D4A843"/>
+    </linearGradient>
   </defs>
+
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <!-- Star dots -->
-  <circle cx="120" cy="80" r="1.5" fill="#D4A843" opacity="0.4"/>
-  <circle cx="340" cy="150" r="1" fill="#F0EDE5" opacity="0.3"/>
-  <circle cx="800" cy="90" r="1.5" fill="#D4A843" opacity="0.35"/>
-  <circle cx="950" cy="200" r="1" fill="#F0EDE5" opacity="0.25"/>
-  <circle cx="1050" cy="120" r="1.5" fill="#D4A843" opacity="0.3"/>
-  <circle cx="200" cy="400" r="1" fill="#F0EDE5" opacity="0.2"/>
-  <circle cx="700" cy="500" r="1.5" fill="#D4A843" opacity="0.25"/>
-  <circle cx="1100" cy="450" r="1" fill="#F0EDE5" opacity="0.3"/>
-  <!-- Kowhaiwhai pattern line -->
-  <path d="M0 580 C60 560, 120 600, 180 580 S300 560, 360 580 S480 600, 540 580 S660 560, 720 580 S840 600, 900 580 S1020 560, 1080 580 S1140 600, 1200 580" fill="none" stroke="#D4A843" stroke-width="1.5" opacity="0.2"/>
-  <path d="M0 590 C60 610, 120 570, 180 590 S300 610, 360 590 S480 570, 540 590 S660 610, 720 590 S840 570, 900 590 S1020 610, 1080 590 S1140 570, 1200 590" fill="none" stroke="#C0392B" stroke-width="1" opacity="0.15"/>
-  <!-- Koru logo -->
-  <path d="M600 240C600 240 540 200 540 160C540 128 560 108 600 108C640 108 660 128 660 160C660 180 648 192 630 192C612 192 606 180 606 168C606 156 612 150 622 150C632 150 636 156 636 162" stroke="#D4A843" stroke-width="4" stroke-linecap="round" fill="none" transform="translate(-200, -10) scale(0.7)"/>
+
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="210" x2="1200" y2="210" stroke="#D4A843" stroke-width="0.5" opacity="0.06"/>
+  <line x1="0" y1="420" x2="1200" y2="420" stroke="#D4A843" stroke-width="0.5" opacity="0.06"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#gold)" opacity="0.8"/>
+
+  <!-- Koru symbol -->
+  <g transform="translate(600, 170)" opacity="0.12">
+    <path d="M0 0C0 0 -80 -50 -80 -110C-80 -155 -50 -180 0 -180C50 -180 80 -155 80 -110C80 -85 64 -70 40 -70C16 -70 8 -85 8 -100C8 -115 16 -125 32 -125" stroke="#D4A843" stroke-width="6" stroke-linecap="round" fill="none"/>
+  </g>
+
   <!-- Title -->
-  <text x="440" y="200" font-family="Georgia, Playfair Display, serif" font-size="72" font-weight="800" fill="#F0EDE5">SkyHarmony</text>
+  <text x="600" y="240" font-family="Georgia, 'Times New Roman', serif" font-size="96" font-weight="bold" fill="#F0EDE5" text-anchor="middle" letter-spacing="2">SkyHarmony</text>
+
+  <!-- Divider line -->
+  <line x1="400" y1="270" x2="800" y2="270" stroke="url(#gold)" stroke-width="2" opacity="0.6"/>
+
   <!-- Tagline -->
-  <text x="600" y="270" font-family="system-ui, sans-serif" font-size="22" fill="#D4A843" text-anchor="middle" letter-spacing="6" font-weight="500">THE SKY IS NO LONGER THE LIMIT</text>
-  <!-- Subtitle -->
-  <text x="600" y="330" font-family="system-ui, sans-serif" font-size="18" fill="#8CA0B3" text-anchor="middle">Cooperative drone fleet coordination for show operators</text>
+  <text x="600" y="320" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#D4A843" text-anchor="middle" letter-spacing="8" font-weight="600">THE SKY IS NO LONGER THE LIMIT</text>
+
+  <!-- Description -->
+  <text x="600" y="380" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#B0C4D8" text-anchor="middle">Cooperative drone fleet coordination for show operators</text>
+
   <!-- Feature pills -->
-  <rect x="230" y="380" width="160" height="36" rx="18" fill="none" stroke="#D4A843" stroke-width="1" opacity="0.4"/>
-  <text x="310" y="403" font-family="system-ui, sans-serif" font-size="13" fill="#D4A843" text-anchor="middle">500+ Drones</text>
-  <rect x="420" y="380" width="160" height="36" rx="18" fill="none" stroke="#D4A843" stroke-width="1" opacity="0.4"/>
-  <text x="500" y="403" font-family="system-ui, sans-serif" font-size="13" fill="#D4A843" text-anchor="middle">5 Operators</text>
-  <rect x="610" y="380" width="180" height="36" rx="18" fill="none" stroke="#D4A843" stroke-width="1" opacity="0.4"/>
-  <text x="700" y="403" font-family="system-ui, sans-serif" font-size="13" fill="#D4A843" text-anchor="middle">Real-Time Tracking</text>
-  <rect x="820" y="380" width="160" height="36" rx="18" fill="none" stroke="#D4A843" stroke-width="1" opacity="0.4"/>
-  <text x="900" y="403" font-family="system-ui, sans-serif" font-size="13" fill="#D4A843" text-anchor="middle">QR Check-In</text>
-  <!-- Bottom bar -->
-  <rect x="0" y="610" width="1200" height="3" fill="#D4A843" opacity="0.3"/>
-  <!-- URL -->
-  <text x="600" y="530" font-family="system-ui, sans-serif" font-size="16" fill="#8CA0B3" text-anchor="middle" opacity="0.6">skyharmony.us</text>
+  <g transform="translate(0, 430)">
+    <rect x="135" y="0" width="180" height="44" rx="22" fill="#D4A843" fill-opacity="0.12" stroke="#D4A843" stroke-width="1.5" opacity="0.7"/>
+    <text x="225" y="28" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D4A843" text-anchor="middle" font-weight="600">500+ Drones</text>
+
+    <rect x="345" y="0" width="180" height="44" rx="22" fill="#D4A843" fill-opacity="0.12" stroke="#D4A843" stroke-width="1.5" opacity="0.7"/>
+    <text x="435" y="28" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D4A843" text-anchor="middle" font-weight="600">Smart Allocation</text>
+
+    <rect x="555" y="0" width="180" height="44" rx="22" fill="#D4A843" fill-opacity="0.12" stroke="#D4A843" stroke-width="1.5" opacity="0.7"/>
+    <text x="645" y="28" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D4A843" text-anchor="middle" font-weight="600">QR Chain-of-Custody</text>
+
+    <rect x="765" y="0" width="180" height="44" rx="22" fill="#D4A843" fill-opacity="0.12" stroke="#D4A843" stroke-width="1.5" opacity="0.7"/>
+    <text x="855" y="28" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D4A843" text-anchor="middle" font-weight="600">Real-Time Billing</text>
+  </g>
+
+  <!-- Kowhaiwhai pattern at bottom -->
+  <g transform="translate(0, 560)" opacity="0.15">
+    <path d="M0 20 C40 0, 80 40, 120 20 S200 0, 240 20 S320 40, 360 20 S440 0, 480 20 S560 40, 600 20 S680 0, 720 20 S800 40, 840 20 S920 0, 960 20 S1040 40, 1080 20 S1160 0, 1200 20" fill="none" stroke="#D4A843" stroke-width="2"/>
+    <path d="M0 30 C40 50, 80 10, 120 30 S200 50, 240 30 S320 10, 360 30 S440 50, 480 30 S560 10, 600 30 S680 50, 720 30 S800 10, 840 30 S920 50, 960 30 S1040 10, 1080 30 S1160 50, 1200 30" fill="none" stroke="#C0392B" stroke-width="1.5"/>
+  </g>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#gold)" opacity="0.8"/>
+
+  <!-- Domain -->
+  <text x="600" y="555" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#8CA0B3" text-anchor="middle" letter-spacing="2">skyharmony.islandpitch.world</text>
 </svg>
