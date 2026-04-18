@@ -66,6 +66,16 @@ async function seed() {
     role: 'CentralRepoAdmin',
   }).onConflictDoNothing();
 
+  const logisticsPasswordHash = await bcrypt.hash('logistics123', 10);
+  await db.insert(users).values({
+    id: '00000000-0000-4000-8000-ad0100000002',
+    email: 'logistics@skyharmony.dev',
+    password_hash: logisticsPasswordHash,
+    name: 'Logistics Demo',
+    role: 'LogisticsStaff',
+    onboarded: 'true',
+  }).onConflictDoNothing();
+
   // 2. Create operator users (so foreign keys work)
   for (const op of operators) {
     const hash = await bcrypt.hash('operator123', 10);

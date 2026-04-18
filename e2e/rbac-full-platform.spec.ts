@@ -21,18 +21,6 @@ async function login(page: Page, email: string, password: string) {
   }
 }
 
-async function expectPageLoads(page: Page, path: string, contentSelector: string, timeout = 10000) {
-  await page.goto(path);
-  await expect(page.locator(contentSelector).first()).toBeVisible({ timeout });
-}
-
-async function expectNoErrors(page: Page) {
-  // No uncaught JS errors
-  const errors: string[] = [];
-  page.on('pageerror', (err) => errors.push(err.message));
-  await page.waitForTimeout(500);
-  expect(errors).toHaveLength(0);
-}
 
 async function expectNavItemVisible(page: Page, label: string) {
   await expect(page.locator('.sidebar-nav').getByText(label)).toBeVisible();
@@ -214,10 +202,19 @@ test.describe('Admin Role (CentralRepoAdmin)', () => {
       '/scan', '/allocation', '/incidents',
       '/missions', '/marketplace',
     ];
-    for (const path of paths) {
-      await page.goto(path);
-      await expect(page.locator('.main-content').first()).toBeVisible({ timeout: 5000 });
-      await expectNoErrors(page);
+    const errors: string[] = [];
+    const onPageError = (err: Error) => errors.push(err.message);
+    page.on('pageerror', onPageError);
+    try {
+      for (const path of paths) {
+        await page.goto(path);
+        await expect(page.locator('.main-content').first()).toBeVisible({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        expect(errors, `pageerror after ${path}: ${errors.join('; ')}`).toHaveLength(0);
+        errors.length = 0;
+      }
+    } finally {
+      page.off('pageerror', onPageError);
     }
   });
 });
@@ -236,6 +233,7 @@ test.describe('Operator Role (OperatorAdmin)', () => {
     await expectNavItemVisible(page, 'Fleet');
     await expectNavItemVisible(page, 'Bookings');
     await expectNavItemVisible(page, 'Billing');
+    await expectNavItemHidden(page, 'Terms');
     // OperatorAdmin has AssetAllocate permission so Allocation is visible
     // but API-level RBAC restricts actual allocation execution to admin only
   });
@@ -276,14 +274,18 @@ test.describe('Operator Role (OperatorAdmin)', () => {
 
 test.describe('Logistics Role (LogisticsStaff)', () => {
   test.beforeEach(async ({ page }) => {
-    // Create a logistics user via API first, or use an existing one
-    // For now, test with admin and check what logistics SHOULD see
-    await login(page, 'admin@skyharmony.dev', 'admin123');
+    await login(page, 'logistics@skyharmony.dev', 'logistics123');
   });
 
   test('scan page is accessible', async ({ page }) => {
     await page.goto('/scan');
     await expect(page.locator('.scan-page')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('sidebar hides operator and admin-only nav', async ({ page }) => {
+    await expectNavItemHidden(page, 'Bookings');
+    await expectNavItemHidden(page, 'Billing');
+    await expectNavItemHidden(page, 'Incidents');
   });
 });
 
