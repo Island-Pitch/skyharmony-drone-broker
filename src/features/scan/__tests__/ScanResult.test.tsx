@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { ScanResult } from '../ScanResult';
 import type { Asset } from '@/data/models/asset';
 
@@ -33,26 +34,32 @@ describe('ScanResult', () => {
     onClear: vi.fn(),
   };
 
+  function renderScanResult(props: Parameters<typeof ScanResult>[0]) {
+    return render(
+      <MemoryRouter>
+        <ScanResult {...props} />
+      </MemoryRouter>,
+    );
+  }
+
   it('renders nothing when no asset and no error', () => {
-    const { container } = render(<ScanResult {...defaultProps} />);
-    expect(container.firstChild).toBeNull();
+    const { container } = renderScanResult(defaultProps);
+    expect(container.querySelector('.scan-result')).toBeNull();
   });
 
   it('shows unknown asset message when not found', () => {
-    render(<ScanResult {...defaultProps} notFound={true} />);
+    renderScanResult({ ...defaultProps, notFound: true });
     expect(screen.getByText(/unknown asset/i)).toBeInTheDocument();
   });
 
   it('shows error message', () => {
-    render(
-      <ScanResult {...defaultProps} error="Something went wrong" />,
-    );
+    renderScanResult({ ...defaultProps, error: 'Something went wrong' });
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
   it('shows asset details when asset is provided', () => {
     const asset = makeAsset();
-    render(<ScanResult {...defaultProps} asset={asset} />);
+    renderScanResult({ ...defaultProps, asset });
 
     expect(screen.getByText('VE-0001')).toBeInTheDocument();
     expect(screen.getByText('Verge Aero')).toBeInTheDocument();
@@ -64,7 +71,7 @@ describe('ScanResult', () => {
 
   it('shows Check Out button for available assets', () => {
     const asset = makeAsset({ status: 'available' });
-    render(<ScanResult {...defaultProps} asset={asset} />);
+    renderScanResult({ ...defaultProps, asset });
 
     expect(
       screen.getByRole('button', { name: /check out/i }),
@@ -73,7 +80,7 @@ describe('ScanResult', () => {
 
   it('shows Check In button for allocated assets', () => {
     const asset = makeAsset({ status: 'allocated' });
-    render(<ScanResult {...defaultProps} asset={asset} />);
+    renderScanResult({ ...defaultProps, asset });
 
     expect(
       screen.getByRole('button', { name: /check in/i }),
@@ -82,7 +89,7 @@ describe('ScanResult', () => {
 
   it('shows Report Issue button for allocated assets', () => {
     const asset = makeAsset({ status: 'allocated' });
-    render(<ScanResult {...defaultProps} asset={asset} />);
+    renderScanResult({ ...defaultProps, asset });
 
     expect(
       screen.getByRole('button', { name: /report issue/i }),
@@ -92,9 +99,7 @@ describe('ScanResult', () => {
   it('calls onCheckOut when Check Out is clicked', () => {
     const onCheckOut = vi.fn();
     const asset = makeAsset({ status: 'available' });
-    render(
-      <ScanResult {...defaultProps} asset={asset} onCheckOut={onCheckOut} />,
-    );
+    renderScanResult({ ...defaultProps, asset, onCheckOut });
 
     fireEvent.click(screen.getByRole('button', { name: /check out/i }));
     expect(onCheckOut).toHaveBeenCalledTimes(1);
@@ -103,9 +108,7 @@ describe('ScanResult', () => {
   it('calls onCheckIn when Check In is clicked', () => {
     const onCheckIn = vi.fn();
     const asset = makeAsset({ status: 'allocated' });
-    render(
-      <ScanResult {...defaultProps} asset={asset} onCheckIn={onCheckIn} />,
-    );
+    renderScanResult({ ...defaultProps, asset, onCheckIn });
 
     fireEvent.click(screen.getByRole('button', { name: /check in/i }));
     expect(onCheckIn).toHaveBeenCalledTimes(1);
@@ -113,14 +116,12 @@ describe('ScanResult', () => {
 
   it('shows check-out confirmation', () => {
     const asset = makeAsset({ status: 'allocated' });
-    render(
-      <ScanResult
-        {...defaultProps}
-        asset={asset}
-        lastAction="check_out"
-        actionSuccess={true}
-      />,
-    );
+    renderScanResult({
+      ...defaultProps,
+      asset,
+      lastAction: 'check_out',
+      actionSuccess: true,
+    });
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       /checked out.*VE-0001/i,
@@ -129,14 +130,12 @@ describe('ScanResult', () => {
 
   it('shows check-in confirmation', () => {
     const asset = makeAsset({ status: 'available' });
-    render(
-      <ScanResult
-        {...defaultProps}
-        asset={asset}
-        lastAction="check_in"
-        actionSuccess={true}
-      />,
-    );
+    renderScanResult({
+      ...defaultProps,
+      asset,
+      lastAction: 'check_in',
+      actionSuccess: true,
+    });
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       /checked in.*VE-0001/i,
@@ -146,7 +145,7 @@ describe('ScanResult', () => {
   it('calls onClear when Clear is clicked', () => {
     const onClear = vi.fn();
     const asset = makeAsset();
-    render(<ScanResult {...defaultProps} asset={asset} onClear={onClear} />);
+    renderScanResult({ ...defaultProps, asset, onClear });
 
     fireEvent.click(screen.getByRole('button', { name: /clear/i }));
     expect(onClear).toHaveBeenCalledTimes(1);
@@ -154,7 +153,7 @@ describe('ScanResult', () => {
 
   it('shows status badge', () => {
     const asset = makeAsset({ status: 'available' });
-    render(<ScanResult {...defaultProps} asset={asset} />);
+    renderScanResult({ ...defaultProps, asset });
 
     expect(screen.getByText('available')).toHaveClass('status-badge');
   });

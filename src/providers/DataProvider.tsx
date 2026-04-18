@@ -3,9 +3,11 @@ import { InMemoryAssetRepository } from '@/data/repositories/InMemoryAssetReposi
 import { InMemoryAuditRepository } from '@/data/repositories/InMemoryAuditRepository';
 import { InMemoryBookingRepository } from '@/data/repositories/InMemoryBookingRepository';
 import { InMemoryCustodyRepository } from '@/data/repositories/InMemoryCustodyRepository';
+import { InMemoryIncidentRepository } from '@/data/repositories/InMemoryIncidentRepository';
 import { AssetService } from '@/services/AssetService';
 import { AuditService } from '@/services/AuditService';
 import { BookingService } from '@/services/BookingService';
+import { IncidentService } from '@/services/IncidentService';
 import { ScanService } from '@/services/ScanService';
 import { seedStore } from '@/data/seed';
 import { store } from '@/data/store';
@@ -18,6 +20,7 @@ export interface DataContextValue {
   auditService: AuditService;
   bookingRepo: IBookingRepository;
   bookingService: BookingService;
+  incidentService: IncidentService;
   scanService: ScanService;
 }
 
@@ -36,12 +39,14 @@ export function DataProvider({ children }: DataProviderProps) {
     const assetRepo = new InMemoryAssetRepository();
     const auditRepo = new InMemoryAuditRepository();
     const custodyRepo = new InMemoryCustodyRepository();
+    const incidentRepo = new InMemoryIncidentRepository();
     const assetService = new AssetService(assetRepo);
     const auditService = new AuditService(auditRepo);
     const bookingRepo = new InMemoryBookingRepository();
     const bookingService = new BookingService(bookingRepo);
+    const incidentService = new IncidentService(incidentRepo, assetRepo, auditService);
     const scanService = new ScanService(assetRepo, custodyRepo, auditService);
-    return { assetRepo, assetService, auditService, bookingRepo, bookingService, scanService };
+    return { assetRepo, assetService, auditService, bookingRepo, bookingService, incidentService, scanService };
   }, []);
 
   return (

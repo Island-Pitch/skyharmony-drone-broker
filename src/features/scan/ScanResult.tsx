@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { Asset } from '@/data/models/asset';
 import './scan.css';
 
@@ -23,6 +24,7 @@ export function ScanResult({
   onCheckIn,
   onClear,
 }: ScanResultProps) {
+  const navigate = useNavigate();
   if (notFound) {
     return (
       <div className="scan-result scan-result-error">
@@ -112,7 +114,12 @@ export function ScanResult({
             <button className="btn-primary" onClick={onCheckIn}>
               Check In
             </button>
-            <button className="btn-secondary" disabled>
+            <button
+              className="btn-secondary"
+              onClick={() =>
+                navigate(`/incidents?assetId=${asset.id}`)
+              }
+            >
               Report Issue
             </button>
           </>

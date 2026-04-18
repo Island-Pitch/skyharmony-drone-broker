@@ -11,4 +11,5 @@ export const appRoutes: AppRoute[] = [
   { path: 'missions', label: 'Missions', icon: 'map', nav: ['side', 'top', 'mobile'] },
   { path: 'marketplace', label: 'Marketplace', icon: 'shopping-bag', nav: ['side', 'top', 'mobile'] },
   { path: 'bookings', label: 'Bookings', icon: 'calendar', nav: ['side', 'top', 'mobile'] },
+  { path: 'incidents', label: 'Incidents', icon: 'alert-triangle', nav: ['side', 'mobile'] },
 ];
