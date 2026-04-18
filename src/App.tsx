@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
+import { RequireAuth } from './components/RequireAuth';
 import { appRoutes } from './routing/appRoutes';
 import { routeComponents } from './routing/routeComponents';
 import { PlaceholderPage } from './components/PlaceholderPage';
@@ -21,7 +22,7 @@ export function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/accessibility" element={<AccessibilityPage />} />
-          <Route element={<AppLayout routes={appRoutes} />}>
+          <Route element={<RequireAuth><AppLayout routes={appRoutes} /></RequireAuth>}>
             {appRoutes.map((route) => {
               const Component = routeComponents[route.path] ?? PlaceholderPage;
               return (
