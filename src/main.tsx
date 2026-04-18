@@ -4,6 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import './theme/global.css';
 
+// Redirect www.skyharmony.net → skyharmony.net
+if (location.hostname === 'www.skyharmony.net') {
+  location.replace(`https://skyharmony.net${location.pathname}${location.search}${location.hash}`);
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
