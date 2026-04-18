@@ -64,6 +64,9 @@ async function seed() {
     password_hash: adminPasswordHash,
     name: 'System Admin',
     role: 'CentralRepoAdmin',
+    organization: 'Sky Harmony',
+    region: 'Southern California',
+    onboarded: 'true',
   }).onConflictDoNothing();
 
   const logisticsPasswordHash = await bcrypt.hash('logistics123', 10);
@@ -85,6 +88,10 @@ async function seed() {
       password_hash: hash,
       name: op.name,
       role: 'OperatorAdmin',
+      organization: op.name,
+      region: op.region,
+      fleet_size: op.drone_count,
+      onboarded: 'true',
     }).onConflictDoNothing();
   }
 
