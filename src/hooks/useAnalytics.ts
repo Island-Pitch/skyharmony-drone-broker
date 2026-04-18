@@ -47,10 +47,19 @@ export interface DetectAnomaliesResult {
   anomalies: Anomaly[];
 }
 
+export interface AnomaliesListMeta {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+  status_counts: { pending: number; accepted: number; dismissed: number };
+}
+
 /* ---------- Hook ---------- */
 
 export function useAnalytics() {
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+  const [anomaliesMeta, setAnomaliesMeta] = useState<AnomaliesListMeta | null>(null);
   const [baselinesData, setBaselinesData] = useState<BaselinesData | null>(null);
   const [loadingAnomalies, setLoadingAnomalies] = useState(true);
   const [loadingBaselines, setLoadingBaselines] = useState(true);
@@ -58,12 +67,38 @@ export function useAnalytics() {
   const refreshAnomalies = useCallback(async (filters?: { status?: string; anomaly_type?: string }) => {
     setLoadingAnomalies(true);
     try {
-      const params = new URLSearchParams();
-      if (filters?.status) params.set('status', filters.status);
-      if (filters?.anomaly_type) params.set('anomaly_type', filters.anomaly_type);
-      const qs = params.toString();
-      const res = await apiGet<Anomaly[]>(`/analytics/anomalies${qs ? `?${qs}` : ''}`);
-      setAnomalies(res.data);
+      const collected: Anomaly[] = [];
+      let lastMeta: AnomaliesListMeta | null = null;
+      let page = 1;
+
+      for (;;) {
+        const params = new URLSearchParams();
+        if (filters?.status) params.set('status', filters.status);
+        if (filters?.anomaly_type) params.set('anomaly_type', filters.anomaly_type);
+        params.set('page', String(page));
+        params.set('per_page', '200');
+        const res = await apiGet<Anomaly[]>(`/analytics/anomalies?${params.toString()}`);
+        const rows = res.data ?? [];
+        collected.push(...rows);
+
+        const m = res.meta;
+        if (m?.status_counts) {
+          lastMeta = {
+            page: m.page ?? page,
+            per_page: m.per_page ?? 200,
+            total: m.total ?? collected.length,
+            total_pages: m.total_pages ?? 1,
+            status_counts: m.status_counts,
+          };
+        }
+
+        const totalPages = m?.total_pages ?? 1;
+        if (page >= totalPages || rows.length === 0) break;
+        page += 1;
+      }
+
+      setAnomalies(collected);
+      setAnomaliesMeta(lastMeta);
     } finally {
       setLoadingAnomalies(false);
     }
@@ -104,6 +139,7 @@ export function useAnalytics() {
 
   return {
     anomalies,
+    anomaliesMeta,
     baselinesData,
     loadingAnomalies,
     loadingBaselines,

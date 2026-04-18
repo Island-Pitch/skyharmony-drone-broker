@@ -10,6 +10,7 @@ import {
 export function AnalyticsPage() {
   const {
     anomalies,
+    anomaliesMeta,
     baselinesData,
     loadingAnomalies,
     loadingBaselines,
@@ -25,7 +26,9 @@ export function AnalyticsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  const pendingCount = anomalies.filter((a) => a.status === 'pending').length;
+  const pendingCount =
+    anomaliesMeta?.status_counts.pending ??
+    anomalies.filter((a) => a.status === 'pending').length;
   const totalBaselines = baselinesData?.total_baselines ?? 0;
   const coveragePct = baselinesData?.fleet_coverage_pct ?? 0;
 

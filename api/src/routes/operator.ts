@@ -152,8 +152,8 @@ router.get('/operator/overview', auth, async (req, res) => {
   }
 });
 
-// GET /api/operator/team — list users in my organization
-router.get('/operator/team', auth, async (req, res) => {
+// GET /api/operator/team — list users in my organization (operator roles only)
+router.get('/operator/team', auth, requireRole('OperatorAdmin', 'OperatorStaff'), async (req, res) => {
   try {
     const userId = req.user!.userId;
     const [currentUser] = await db

@@ -325,9 +325,18 @@ router.get('/analytics/anomalies', auth, async (req, res) => {
     const limit = Math.min(Number(per_page) || 50, 200);
     const offset = (Math.max(Number(page) || 1, 1) - 1) * limit;
 
-    const [rows, [totalRow]] = await Promise.all([
+    const statusCountsBase = db
+      .select({
+        pending: sql<number>`cast(count(*) filter (where ${anomalies.status} = 'pending') as int)`,
+        accepted: sql<number>`cast(count(*) filter (where ${anomalies.status} = 'accepted') as int)`,
+        dismissed: sql<number>`cast(count(*) filter (where ${anomalies.status} = 'dismissed') as int)`,
+      })
+      .from(anomalies);
+
+    const [rows, [totalRow], [statusCountsRow]] = await Promise.all([
       db.select().from(anomalies).where(where).limit(limit).offset(offset).orderBy(sql`${anomalies.created_at} DESC`),
       db.select({ count: count() }).from(anomalies).where(where),
+      where ? statusCountsBase.where(where) : statusCountsBase,
     ]);
 
     // Enrich with asset serial numbers
@@ -351,7 +360,17 @@ router.get('/analytics/anomalies', auth, async (req, res) => {
 
     res.json({
       data: enrichedRows,
-      meta: { page: currentPage, per_page: limit, total, total_pages: Math.ceil(total / limit) },
+      meta: {
+        page: currentPage,
+        per_page: limit,
+        total,
+        total_pages: Math.ceil(total / limit),
+        status_counts: {
+          pending: Number(statusCountsRow?.pending ?? 0),
+          accepted: Number(statusCountsRow?.accepted ?? 0),
+          dismissed: Number(statusCountsRow?.dismissed ?? 0),
+        },
+      },
     });
   } catch (err) {
     console.error('Anomalies list error:', err);
@@ -365,27 +384,33 @@ const ReviewSchema = z.object({
   status: z.enum(['accepted', 'dismissed']),
 });
 
-router.post('/analytics/anomalies/:id/review', auth, validate(ReviewSchema), async (req, res) => {
-  try {
-    const { status } = req.body as z.infer<typeof ReviewSchema>;
-    const id = req.params.id as string;
+router.post(
+  '/analytics/anomalies/:id/review',
+  auth,
+  requireRole('CentralRepoAdmin'),
+  validate(ReviewSchema),
+  async (req, res) => {
+    try {
+      const { status } = req.body as z.infer<typeof ReviewSchema>;
+      const id = req.params.id as string;
 
-    const [anomaly] = await db
-      .update(anomalies)
-      .set({ status, reviewed_by: req.user!.userId, reviewed_at: new Date() })
-      .where(eq(anomalies.id, id))
-      .returning();
+      const [anomaly] = await db
+        .update(anomalies)
+        .set({ status, reviewed_by: req.user!.userId, reviewed_at: new Date() })
+        .where(eq(anomalies.id, id))
+        .returning();
 
-    if (!anomaly) {
-      res.status(404).json({ error: 'Anomaly not found' });
-      return;
+      if (!anomaly) {
+        res.status(404).json({ error: 'Anomaly not found' });
+        return;
+      }
+      res.json({ data: anomaly });
+    } catch (err) {
+      console.error('Anomaly review error:', err);
+      res.status(500).json({ error: 'Internal server error' });
     }
-    res.json({ data: anomaly });
-  } catch (err) {
-    console.error('Anomaly review error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  },
+);
 
 /* ---------- GET /api/analytics/baselines ---------- */
 
