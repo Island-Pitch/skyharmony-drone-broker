@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import type { AppRoute } from '@/routing/appRoutes';
+import { DemoWatermark } from './DemoWatermark';
 
 interface AppLayoutProps {
   routes: AppRoute[];
@@ -33,6 +34,7 @@ export function AppLayout({ routes }: AppLayoutProps) {
       <main className="main-content">
         <Outlet />
       </main>
+      <DemoWatermark />
     </div>
   );
 }
