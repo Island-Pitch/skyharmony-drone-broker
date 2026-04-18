@@ -24,7 +24,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://skyharmony:skyharmony_dev@db:5432/skyharmony
-      JWT_SECRET: skyharmony-dev-secret
+      JWT_SECRET: ${JWT_SECRET:-}
       PORT: 4000
       NODE_ENV: production
     command: >
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       args:
-        VITE_DEMO_MODE: "true"
+        VITE_DEMO_MODE: "false"
     ports:
       - "50080:3000"
     depends_on:

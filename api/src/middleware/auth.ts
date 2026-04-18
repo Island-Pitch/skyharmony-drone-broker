@@ -1,7 +1,17 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? 'skyharmony-dev-secret';
+function resolveJwtSecret(): string {
+  const fromEnv = process.env.JWT_SECRET?.trim();
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: JWT_SECRET must be set when NODE_ENV is production.');
+    process.exit(1);
+  }
+  return 'skyharmony-dev-secret';
+}
+
+const JWT_SECRET = resolveJwtSecret();
 
 export interface JwtPayload {
   userId: string;
