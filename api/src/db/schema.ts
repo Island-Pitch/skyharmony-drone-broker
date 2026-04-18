@@ -141,9 +141,6 @@ export const transportLegs = pgTable('transport_legs', {
 });
 
 /* ------------------------------------------------------------------ */
-/*  incidents                                                          */
-/* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
 /*  invoices                                                           */
 /* ------------------------------------------------------------------ */
 export const invoices = pgTable('invoices', {
@@ -283,6 +280,9 @@ export const anomalies = pgTable("anomalies", {
   reviewed_by: uuid("reviewed_by").references(() => users.id),
   reviewed_at: timestamp("reviewed_at"),
   created_at: timestamp("created_at").defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
 /*  sponsors                                                           */
 /* ------------------------------------------------------------------ */
 export const sponsors = pgTable('sponsors', {

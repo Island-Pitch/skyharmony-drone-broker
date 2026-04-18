@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signup } from '@/auth/authService';
 import { apiPost, setAuthToken } from '@/data/repositories/http/apiClient';
 
-interface OnboardingData {
+interface SignupData {
   role: string;
   organization: string;
   region: string;
   fleet_size: number;
+  name: string;
+  email: string;
+  password: string;
 }
 
 const ROLE_OPTIONS = [
@@ -53,38 +57,32 @@ const ROLE_OPTIONS = [
 ];
 
 const REGIONS = [
-  'Southern California',
-  'Northern California',
-  'Nevada',
-  'Arizona',
-  'Pacific Northwest',
-  'Southwest US',
-  'Mountain West',
-  'Midwest',
-  'Southeast',
-  'Northeast',
-  'International',
+  'Southern California', 'Northern California', 'Nevada', 'Arizona',
+  'Pacific Northwest', 'Southwest US', 'Mountain West',
+  'Midwest', 'Southeast', 'Northeast', 'International',
 ];
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<OnboardingData>({
-    role: '',
-    organization: '',
-    region: '',
-    fleet_size: 0,
+  const [data, setData] = useState<SignupData>({
+    role: '', organization: '', region: '', fleet_size: 0,
+    name: '', email: '', password: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const totalSteps = data.role === 'OperatorAdmin' ? 4 : 3;
   const showFleetStep = data.role === 'OperatorAdmin';
+  const totalSteps = showFleetStep ? 5 : 4;
 
-  async function handleComplete() {
+  async function handleCreateAccount(e?: FormEvent) {
+    if (e) e.preventDefault();
     setLoading(true);
     setError('');
     try {
+      // 1. Create account
+      await signup(data.email, data.password, data.name);
+      // 2. Complete onboarding
       const res = await apiPost<{ token: string }>('/auth/onboard', {
         role: data.role,
         organization: data.organization,
@@ -92,9 +90,9 @@ export function OnboardingWizard() {
         fleet_size: data.fleet_size,
       });
       setAuthToken(res.data.token);
-      setStep(showFleetStep ? 5 : 4);
+      setStep(totalSteps);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -107,7 +105,7 @@ export function OnboardingWizard() {
           <svg width="40" height="40" viewBox="0 0 48 48" fill="none" aria-hidden="true">
             <path d="M24 44C24 44 8 36 8 22C8 13.2 14.4 6 24 6C33.6 6 40 13.2 40 22C40 28 36 32 30 32C24 32 21 28 21 24C21 20 23 18 26 18C29 18 30 20 30 22" stroke="#D4A843" strokeWidth="2.5" strokeLinecap="round" fill="none" />
           </svg>
-          <h1>Welcome to SkyHarmony</h1>
+          <h1>Join SkyHarmony</h1>
           <div className="onboarding-progress">
             {Array.from({ length: totalSteps }, (_, i) => (
               <div key={i} className={`progress-dot ${i + 1 <= step ? 'active' : ''} ${i + 1 === step ? 'current' : ''}`} />
@@ -119,12 +117,10 @@ export function OnboardingWizard() {
         {step === 1 && (
           <div className="onboarding-step">
             <h2>What best describes you?</h2>
-            <p className="onboarding-hint">This determines your default permissions and dashboard view.</p>
+            <p className="onboarding-hint">This determines your permissions and what you see in the platform.</p>
             <div className="role-grid">
               {ROLE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
+                <button key={opt.value} type="button"
                   className={`role-card ${data.role === opt.value ? 'selected' : ''}`}
                   onClick={() => setData({ ...data, role: opt.value })}
                 >
@@ -134,11 +130,7 @@ export function OnboardingWizard() {
                 </button>
               ))}
             </div>
-            <button
-              className="btn-primary onboarding-next"
-              disabled={!data.role}
-              onClick={() => setStep(2)}
-            >
+            <button className="btn-primary onboarding-next" disabled={!data.role} onClick={() => setStep(2)}>
               Continue
             </button>
           </div>
@@ -149,28 +141,16 @@ export function OnboardingWizard() {
           <div className="onboarding-step">
             <h2>Your Organization</h2>
             <p className="onboarding-hint">Tell us about your company so we can set up your workspace.</p>
-            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); setStep(showFleetStep ? 3 : 3); }}>
+            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); setStep(3); }}>
               <label>
                 <span>Company / Organization Name</span>
-                <input
-                  type="text"
-                  value={data.organization}
-                  onChange={(e) => setData({ ...data, organization: e.target.value })}
-                  placeholder="e.g. NightBrite Drones"
-                  required
-                />
+                <input type="text" value={data.organization} onChange={(e) => setData({ ...data, organization: e.target.value })} placeholder="e.g. NightBrite Drones" required />
               </label>
               <label>
                 <span>Primary Region</span>
-                <select
-                  value={data.region}
-                  onChange={(e) => setData({ ...data, region: e.target.value })}
-                  required
-                >
+                <select value={data.region} onChange={(e) => setData({ ...data, region: e.target.value })} required>
                   <option value="">Select your region...</option>
-                  {REGIONS.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
+                  {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </label>
               <div className="onboarding-actions">
@@ -181,65 +161,63 @@ export function OnboardingWizard() {
           </div>
         )}
 
-        {/* Step 3: Fleet (fleet owners only) or Confirm */}
-        {step === 3 && showFleetStep && (
+        {/* Step 3: Account Creation */}
+        {step === 3 && (
           <div className="onboarding-step">
-            <h2>Your Fleet</h2>
-            <p className="onboarding-hint">How many drones does your organization currently operate?</p>
-            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); handleComplete(); }}>
+            <h2>Create Your Account</h2>
+            <p className="onboarding-hint">Almost there — set up your login credentials.</p>
+            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); showFleetStep ? setStep(4) : handleCreateAccount(); }}>
               <label>
-                <span>Approximate Fleet Size (drones)</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={data.fleet_size || ''}
-                  onChange={(e) => setData({ ...data, fleet_size: parseInt(e.target.value) || 0 })}
-                  placeholder="e.g. 150"
-                />
+                <span>Full Name</span>
+                <input type="text" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} placeholder="e.g. Jonathan de Armas" required />
               </label>
-              <div className="fleet-size-hints">
-                {[50, 100, 200, 500].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    className={`fleet-hint-btn ${data.fleet_size === n ? 'active' : ''}`}
-                    onClick={() => setData({ ...data, fleet_size: n })}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-              {error && <p className="login-error">{error}</p>}
+              <label>
+                <span>Email</span>
+                <input type="email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="you@company.com" required />
+              </label>
+              <label>
+                <span>Password</span>
+                <input type="password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} placeholder="Minimum 6 characters" required minLength={6} />
+              </label>
+              {error && !showFleetStep && <p className="login-error">{error}</p>}
               <div className="onboarding-actions">
                 <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Back</button>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Setting up...' : 'Complete Setup'}
+                <button type="submit" className="btn-primary" disabled={!data.name || !data.email || !data.password || loading}>
+                  {showFleetStep ? 'Continue' : loading ? 'Creating...' : 'Create Account'}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {step === 3 && !showFleetStep && (
+        {/* Step 4: Fleet (owners only) */}
+        {step === 4 && showFleetStep && (
           <div className="onboarding-step">
-            <h2>Ready to Go</h2>
-            <div className="onboarding-summary">
-              <div className="summary-row"><span>Role</span><strong>{ROLE_OPTIONS.find((o) => o.value === data.role)?.label}</strong></div>
-              <div className="summary-row"><span>Organization</span><strong>{data.organization}</strong></div>
-              <div className="summary-row"><span>Region</span><strong>{data.region}</strong></div>
-            </div>
-            {error && <p className="login-error">{error}</p>}
-            <div className="onboarding-actions">
-              <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Back</button>
-              <button className="btn-primary" onClick={handleComplete} disabled={loading}>
-                {loading ? 'Setting up...' : 'Complete Setup'}
-              </button>
-            </div>
+            <h2>Your Fleet</h2>
+            <p className="onboarding-hint">How many drones does your organization currently operate?</p>
+            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); handleCreateAccount(); }}>
+              <label>
+                <span>Approximate Fleet Size (drones)</span>
+                <input type="number" min="0" value={data.fleet_size || ''} onChange={(e) => setData({ ...data, fleet_size: parseInt(e.target.value) || 0 })} placeholder="e.g. 150" />
+              </label>
+              <div className="fleet-size-hints">
+                {[50, 100, 200, 500].map((n) => (
+                  <button key={n} type="button" className={`fleet-hint-btn ${data.fleet_size === n ? 'active' : ''}`} onClick={() => setData({ ...data, fleet_size: n })}>{n}</button>
+                ))}
+              </div>
+              {error && <p className="login-error">{error}</p>}
+              <div className="onboarding-actions">
+                <button type="button" className="btn-secondary" onClick={() => setStep(3)}>Back</button>
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
           </div>
         )}
 
         {/* Final: Welcome */}
-        {(step === 4 || step === 5) && (
+        {step === totalSteps && (
           <div className="onboarding-step onboarding-welcome">
             <div className="welcome-icon">
               <svg width="64" height="64" viewBox="0 0 48 48" fill="none" aria-hidden="true">
