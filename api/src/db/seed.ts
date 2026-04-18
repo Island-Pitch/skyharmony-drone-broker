@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -199,9 +199,15 @@ async function seed() {
   // 6b. Trailers
   const trailerRows: (typeof assets.$inferInsert)[] = [];
   const vehicleTypes = ['enclosed', 'flatbed', 'refrigerated'];
+<<<<<<< HEAD
   const states = ['CA', 'NV', 'AZ'];
   for (let i = 1; i <= 15; i++) {
     const state = states[i % states.length]!;
+=======
+  const stateAbbrevs = ['CA', 'NV', 'AZ'];
+  for (let i = 1; i <= 15; i++) {
+    const state = stateAbbrevs[i % stateAbbrevs.length]!;
+>>>>>>> epic/SHD-8-settlement
     trailerRows.push({
       id: crypto.randomUUID(),
       asset_type_id: typeRows[4]!.id,
@@ -209,11 +215,15 @@ async function seed() {
       manufacturer: 'TrailKing',
       model: 'DroneHauler Pro',
       status: 'available',
+<<<<<<< HEAD
       typed_attributes: {
         capacity_drones: 100,
         vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length],
         license_plate: `${state}-${String(1000 + i)}`,
       },
+=======
+      typed_attributes: { capacity_drones: 100, vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length], license_plate: `${state}-${String(1000 + i)}` },
+>>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -232,11 +242,15 @@ async function seed() {
       manufacturer: 'Ubiquiti',
       model: 'AirMax Sector',
       status: 'available',
+<<<<<<< HEAD
       typed_attributes: {
         frequency_ghz: frequencies[(i - 1) % frequencies.length],
         range_km: 5 + Math.floor(rand() * 10),
         channels: 16,
       },
+=======
+      typed_attributes: { frequency_ghz: frequencies[(i - 1) % frequencies.length], range_km: 5 + Math.floor(rand() * 10), channels: 16 },
+>>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -255,11 +269,15 @@ async function seed() {
       manufacturer: 'Verge Aero',
       model: 'Command Center',
       status: 'available',
+<<<<<<< HEAD
       typed_attributes: {
         software_version: swVersions[(i - 1) % swVersions.length],
         max_drones: 500,
         display_count: 4,
       },
+=======
+      typed_attributes: { software_version: swVersions[(i - 1) % swVersions.length], max_drones: 500, display_count: 4 },
+>>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -278,11 +296,15 @@ async function seed() {
       manufacturer: 'Trimble',
       model: 'R12i',
       status: 'available',
+<<<<<<< HEAD
       typed_attributes: {
         accuracy_cm: 2,
         constellation: constellations[(i - 1) % constellations.length],
         range_km: 10,
       },
+=======
+      typed_attributes: { accuracy_cm: 2, constellation: constellations[(i - 1) % constellations.length], range_km: 10 },
+>>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -590,6 +612,64 @@ async function seed() {
   }
   await db.insert(invoices).values(invoiceRows).onConflictDoNothing();
   console.log(`  Inserted ${invoiceRows.length} invoices`);
+
+  // 10. Settlements — 3 sample settlements for different operators/periods
+  const settlementRows: (typeof settlements.$inferInsert)[] = [
+    {
+      id: '00000000-0000-4000-8000-c00000000001',
+      operator_id: operators[0]!.id,
+      period_start: '2026-03-01',
+      period_end: '2026-03-31',
+      status: 'paid',
+      total_due: '40568.50',
+      total_payable: '40568.50',
+      net_amount: '37728.71',
+      deductions: {
+        insurance_pool: 2839.80,
+        damage_charges: 0,
+        total_deductions: 2839.80,
+      },
+      payment_reference: 'ACH-2026-0401-NB',
+      approved_by: adminId,
+      approved_at: new Date(now.getTime() - 10 * 86400000),
+      paid_at: new Date(now.getTime() - 5 * 86400000),
+    },
+    {
+      id: '00000000-0000-4000-8000-c00000000002',
+      operator_id: operators[1]!.id,
+      period_start: '2026-03-01',
+      period_end: '2026-03-31',
+      status: 'approved',
+      total_due: '35125.00',
+      total_payable: '35125.00',
+      net_amount: '31166.25',
+      deductions: {
+        insurance_pool: 2458.75,
+        damage_charges: 1500,
+        total_deductions: 3958.75,
+      },
+      approved_by: adminId,
+      approved_at: new Date(now.getTime() - 3 * 86400000),
+    },
+    {
+      id: '00000000-0000-4000-8000-c00000000003',
+      operator_id: operators[2]!.id,
+      period_start: '2026-04-01',
+      period_end: '2026-04-15',
+      status: 'draft',
+      total_due: '28750.00',
+      total_payable: '28750.00',
+      net_amount: '26737.50',
+      deductions: {
+        insurance_pool: 2012.50,
+        damage_charges: 0,
+        total_deductions: 2012.50,
+      },
+    },
+  ];
+
+  await db.insert(settlements).values(settlementRows).onConflictDoNothing();
+  console.log(`  Inserted ${settlementRows.length} settlements`);
 
   console.log('Seed complete!');
   await pool.end();

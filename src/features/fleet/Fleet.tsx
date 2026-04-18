@@ -25,6 +25,7 @@ export function Fleet() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // Gather asset types from the global store
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const assetTypes = useMemo<AssetType[]>(() => {
     return Array.from(store.assetTypes.values());
   }, [loading]);
@@ -82,16 +83,18 @@ export function Fleet() {
       <h2>Fleet Management</h2>
 
       {/* Asset type summary cards */}
-      <div className="stats-grid fleet-type-cards">
-        {assetTypes.map((t) => (
-          <AssetTypeCard
-            key={t.id}
-            name={t.name}
-            description={t.description}
-            count={typeCounts.get(t.id) ?? 0}
-          />
-        ))}
-      </div>
+      {assetTypes.length > 0 && (
+        <div className="stats-grid fleet-type-cards">
+          {assetTypes.map((t) => (
+            <AssetTypeCard
+              key={t.id}
+              name={t.name}
+              description={t.description}
+              count={typeCounts.get(t.id) ?? 0}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Type filter */}
       <div className="fleet-toolbar">

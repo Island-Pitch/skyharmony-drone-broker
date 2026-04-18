@@ -12,7 +12,11 @@ import billingRouter from './routes/billing.js';
 import invoicesRouter from './routes/invoices.js';
 import logisticsRouter from './routes/logistics.js';
 import maintenanceRouter from './routes/maintenance.js';
+<<<<<<< HEAD
 import telemetryRouter from './routes/telemetry.js';
+=======
+import settlementsRouter from './routes/settlements.js';
+>>>>>>> epic/SHD-8-settlement
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -39,7 +43,11 @@ app.use('/api', billingRouter);
 app.use('/api', invoicesRouter);
 app.use('/api', logisticsRouter);
 app.use('/api', maintenanceRouter);
+<<<<<<< HEAD
 app.use('/api', telemetryRouter);
+=======
+app.use('/api', settlementsRouter);
+>>>>>>> epic/SHD-8-settlement
 
 app.listen(PORT, () => {
   console.log(`SkyHarmony API listening on port ${PORT}`);

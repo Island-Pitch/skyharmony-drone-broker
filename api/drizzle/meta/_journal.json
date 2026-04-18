@@ -33,6 +33,7 @@
     {
       "idx": 4,
       "version": "7",
+<<<<<<< HEAD
       "when": 1776580000000,
       "tag": "0004_telemetry_syncs",
       "breakpoints": true
@@ -49,6 +50,10 @@
       "version": "7",
       "when": 1776600000000,
       "tag": "0006_settlements",
+=======
+      "when": 1776600000000,
+      "tag": "0004_settlements",
+>>>>>>> epic/SHD-8-settlement
       "breakpoints": true
     }
   ]
