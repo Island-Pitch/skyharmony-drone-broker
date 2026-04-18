@@ -141,9 +141,6 @@ export const transportLegs = pgTable('transport_legs', {
 });
 
 /* ------------------------------------------------------------------ */
-/*  incidents                                                          */
-/* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
 /*  invoices                                                           */
 /* ------------------------------------------------------------------ */
 export const invoices = pgTable('invoices', {
@@ -234,6 +231,79 @@ export const settlements = pgTable('settlements', {
   paid_at: timestamp('paid_at'),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  cooperative_terms                                                   */
+/* ------------------------------------------------------------------ */
+export const cooperativeTerms = pgTable('cooperative_terms', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  version: integer('version').notNull(),
+  brokerage_pct: numeric('brokerage_pct', { precision: 5, scale: 2 }).notNull(),
+  allocation_fee_per_drone: numeric('allocation_fee_per_drone', { precision: 10, scale: 2 }).notNull(),
+  standby_fee_per_drone: numeric('standby_fee_per_drone', { precision: 10, scale: 2 }).notNull(),
+  insurance_pool_pct: numeric('insurance_pool_pct', { precision: 5, scale: 2 }).notNull(),
+  net_payment_days: integer('net_payment_days').notNull(),
+  damage_policy: text('damage_policy'),
+  effective_date: date('effective_date').notNull(),
+  created_by: uuid('created_by').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+
+/* ------------------------------------------------------------------ */
+/*  asset_baselines                                                    */
+/* ------------------------------------------------------------------ */
+export const assetBaselines = pgTable("asset_baselines", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  asset_id: uuid("asset_id").references(() => assets.id).unique().notNull(),
+  avg_flight_hours_per_show: numeric("avg_flight_hours_per_show", { precision: 10, scale: 2 }),
+  stddev_flight_hours: numeric("stddev_flight_hours", { precision: 10, scale: 4 }),
+  avg_battery_drain_per_show: numeric("avg_battery_drain_per_show", { precision: 10, scale: 2 }),
+  stddev_battery_drain: numeric("stddev_battery_drain", { precision: 10, scale: 4 }),
+  sample_count: integer("sample_count").default(0),
+  last_computed: timestamp("last_computed").defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  anomalies                                                          */
+/* ------------------------------------------------------------------ */
+export const anomalies = pgTable("anomalies", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  asset_id: uuid("asset_id").references(() => assets.id),
+  anomaly_type: varchar("anomaly_type", { length: 30 }).notNull(),
+  field: varchar("field", { length: 100 }).notNull(),
+  expected_value: numeric("expected_value", { precision: 12, scale: 4 }),
+  actual_value: numeric("actual_value", { precision: 12, scale: 4 }),
+  sigma_distance: numeric("sigma_distance", { precision: 8, scale: 2 }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  reviewed_by: uuid("reviewed_by").references(() => users.id),
+  reviewed_at: timestamp("reviewed_at"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  sponsors                                                           */
+/* ------------------------------------------------------------------ */
+export const sponsors = pgTable('sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar('name', { length: 255 }).notNull(),
+  logo_url: text('logo_url'),
+  campaign_tag: varchar('campaign_tag', { length: 100 }),
+  contact_email: varchar('contact_email', { length: 255 }),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  booking_sponsors                                                   */
+/* ------------------------------------------------------------------ */
+export const bookingSponsors = pgTable('booking_sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  booking_id: uuid('booking_id').references(() => bookings.id).notNull(),
+  sponsor_id: uuid('sponsor_id').references(() => sponsors.id).notNull(),
+  campaign_name: varchar('campaign_name', { length: 255 }),
+  notes: text('notes'),
 });
 
 /* ------------------------------------------------------------------ */

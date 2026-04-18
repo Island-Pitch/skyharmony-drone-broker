@@ -43,7 +43,13 @@ export function getAuthToken(): string | null {
 interface ApiResponse<T> {
   data: T;
   error?: { message: string; type?: string };
-  meta?: { total?: number; page?: number; per_page?: number; total_pages?: number };
+  meta?: {
+    total?: number;
+    page?: number;
+    per_page?: number;
+    total_pages?: number;
+    status_counts?: { pending: number; accepted: number; dismissed: number };
+  };
 }
 
 async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {

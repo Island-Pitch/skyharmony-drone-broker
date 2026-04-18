@@ -2043,3 +2043,312 @@ form {
   opacity: 0.6;
   font-style: italic;
 }
+
+/* ============================================================
+   SHD-17: Operator Self-Service Dashboard
+   ============================================================ */
+
+.op-hero-heading {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  color: var(--color-bone);
+  letter-spacing: -0.01em;
+}
+
+.op-hero-heading em {
+  font-style: normal;
+  color: var(--color-te-ra);
+}
+
+.op-stats-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 900px) {
+  .op-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 540px) {
+  .op-stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Revenue trend arrow */
+.op-trend {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.op-trend--up {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 7px solid var(--color-success);
+}
+
+.op-trend--down {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--color-danger);
+}
+
+/* Outstanding balance coloring */
+.op-balance-value {
+  color: var(--color-warning) !important;
+}
+
+/* Shows table compact */
+.op-shows-table {
+  font-size: 0.85rem;
+}
+
+/* Fleet Health bar */
+.op-health-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: rgba(212, 168, 67, 0.06);
+  margin-bottom: 0.75rem;
+}
+
+.op-health-segment {
+  transition: width 0.4s ease;
+  min-width: 3px;
+}
+
+.op-health-segment:first-child {
+  border-radius: 7px 0 0 7px;
+}
+
+.op-health-segment:last-child {
+  border-radius: 0 7px 7px 0;
+}
+
+.op-health-segment:only-child {
+  border-radius: 7px;
+}
+
+.op-health-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.op-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.op-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Invoice list */
+.op-invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.op-invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.04);
+}
+
+.op-invoice-row:last-child {
+  border-bottom: none;
+}
+
+.op-invoice-amount {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.op-invoice-date {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+/* Team section */
+.op-team-section {
+  /* inherits dashboard-widget */
+}
+
+.op-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.op-team-header h3 {
+  margin-bottom: 0;
+}
+
+/* Slide-in invite panel */
+.op-invite-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+
+.op-invite-panel--open {
+  max-height: 400px;
+  opacity: 1;
+  margin-bottom: 1rem;
+}
+
+.op-invite-panel-inner {
+  padding: 1rem;
+  background: rgba(10, 61, 98, 0.15);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+}
+
+.op-invite-panel-inner h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-bone);
+}
+
+.op-invite-form {
+  max-width: 360px;
+}
+
+/* Team list */
+.op-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.op-team-member {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgba(212, 168, 67, 0.04);
+}
+
+.op-team-member:last-child {
+  border-bottom: none;
+}
+
+.op-team-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-te-ra);
+  color: var(--color-te-po);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.op-team-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.op-team-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.op-team-email {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.op-role-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.op-role-operatoradmin {
+  background: rgba(212, 168, 67, 0.15);
+  color: var(--color-te-ra);
+}
+
+.op-role-operatorstaff {
+  background: rgba(10, 61, 98, 0.25);
+  color: #5BA3D9;
+}
+
+.op-team-joined {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.op-remove-btn {
+  background: none;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  color: var(--color-danger);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: var(--font-body);
+}
+
+.op-remove-btn:hover {
+  background: rgba(231, 76, 60, 0.12);
+  border-color: var(--color-danger);
+}
+
+.op-confirm-remove {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.op-confirm-yes {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.op-confirm-no {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
