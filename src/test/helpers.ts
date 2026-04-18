@@ -1,4 +1,5 @@
 import type { Asset, AssetType, CreateAssetInput } from '@/data/models/asset';
+import type { Booking, CreateBookingInput } from '@/data/models/booking';
 
 let counter = 0;
 
@@ -47,6 +48,38 @@ export function createMockCreateInput(
     manufacturer: 'Test Manufacturer',
     model: 'Test Model',
     typed_attributes: {},
+    ...overrides,
+  };
+}
+
+export function createMockBooking(
+  overrides: Partial<Booking> = {},
+): Booking {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    operator_id: crypto.randomUUID(),
+    operator_name: `Operator-${++counter}`,
+    show_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    drone_count: 50,
+    location: 'Test Location',
+    status: 'pending',
+    allocated_assets: [],
+    created_at: now,
+    updated_at: now,
+    ...overrides,
+  };
+}
+
+export function createMockBookingInput(
+  overrides: Partial<CreateBookingInput> = {},
+): CreateBookingInput {
+  return {
+    operator_id: crypto.randomUUID(),
+    operator_name: `Operator-${++counter}`,
+    show_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    drone_count: 50,
+    location: 'Test Location',
     ...overrides,
   };
 }

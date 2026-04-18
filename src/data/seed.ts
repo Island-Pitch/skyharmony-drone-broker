@@ -1,5 +1,6 @@
 import { store } from './store';
 import type { Asset, AssetType, AssetStatusValue } from './models/asset';
+import type { Booking, BookingStatusValue } from './models/booking';
 
 const MANUFACTURERS = [
   { name: 'Verge Aero', models: ['X1', 'X1-Pro', 'X7'] },
@@ -163,4 +164,40 @@ export function seedStore(): void {
     };
     store.assets.set(charger.id, charger);
   }
+
+  // Seed 8 sample bookings with varied statuses and dates
+  const sampleBookings: { operatorName: string; status: BookingStatusValue; daysFromNow: number; drones: number; location: string }[] = [
+    { operatorName: 'SkyShow Events', status: 'pending', daysFromNow: 14, drones: 100, location: 'Miami Beach, FL' },
+    { operatorName: 'SkyShow Events', status: 'allocated', daysFromNow: 7, drones: 50, location: 'Las Vegas, NV' },
+    { operatorName: 'DroneLight Co', status: 'confirmed', daysFromNow: 3, drones: 200, location: 'Austin, TX' },
+    { operatorName: 'DroneLight Co', status: 'completed', daysFromNow: -10, drones: 75, location: 'Nashville, TN' },
+    { operatorName: 'AeroSpectacle', status: 'pending', daysFromNow: 21, drones: 150, location: 'San Diego, CA' },
+    { operatorName: 'AeroSpectacle', status: 'cancelled', daysFromNow: -5, drones: 30, location: 'Portland, OR' },
+    { operatorName: 'NightSky Drones', status: 'pending', daysFromNow: 30, drones: 300, location: 'New York, NY' },
+    { operatorName: 'NightSky Drones', status: 'allocated', daysFromNow: 10, drones: 120, location: 'Chicago, IL' },
+  ];
+
+  const now = new Date();
+  sampleBookings.forEach((sb) => {
+    const showDate = new Date(now);
+    showDate.setDate(showDate.getDate() + sb.daysFromNow);
+    const endDate = new Date(showDate);
+    endDate.setHours(endDate.getHours() + 4);
+
+    const booking: Booking = {
+      id: crypto.randomUUID(),
+      operator_id: crypto.randomUUID(),
+      operator_name: sb.operatorName,
+      show_date: showDate.toISOString(),
+      end_date: endDate.toISOString(),
+      drone_count: sb.drones,
+      location: sb.location,
+      status: sb.status,
+      notes: undefined,
+      allocated_assets: [],
+      created_at: '2024-01-15T00:00:00.000Z',
+      updated_at: new Date().toISOString(),
+    };
+    store.bookings.set(booking.id, booking);
+  });
 }

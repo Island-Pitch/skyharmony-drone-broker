@@ -10,4 +10,5 @@ export const appRoutes: AppRoute[] = [
   { path: 'fleet', label: 'Fleet', icon: 'send', nav: ['side', 'top', 'mobile'] },
   { path: 'missions', label: 'Missions', icon: 'map', nav: ['side', 'top', 'mobile'] },
   { path: 'marketplace', label: 'Marketplace', icon: 'shopping-bag', nav: ['side', 'top', 'mobile'] },
+  { path: 'bookings', label: 'Bookings', icon: 'calendar', nav: ['side', 'top', 'mobile'] },
 ];
