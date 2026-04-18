@@ -1,4 +1,33 @@
+import { useState, useEffect } from 'react';
+import { apiGet } from '@/data/repositories/http/apiClient';
+
+interface CooperativeTermsData {
+  brokerage_pct: string;
+  allocation_fee_per_drone: string;
+  standby_fee_per_drone: string;
+  insurance_pool_pct: string;
+  net_payment_days: number;
+  damage_policy: string | null;
+}
+
+const FALLBACK: CooperativeTermsData = {
+  brokerage_pct: '15.00',
+  allocation_fee_per_drone: '350.00',
+  standby_fee_per_drone: '150.00',
+  insurance_pool_pct: '7.00',
+  net_payment_days: 30,
+  damage_policy: null,
+};
+
 export function TermsPage() {
+  const [terms, setTerms] = useState<CooperativeTermsData>(FALLBACK);
+
+  useEffect(() => {
+    apiGet<CooperativeTermsData>('/terms/current')
+      .then((res) => setTerms(res.data))
+      .catch(() => setTerms(FALLBACK));
+  }, []);
+
   return (
     <div className="legal-page">
       <div className="legal-container">
@@ -39,12 +68,20 @@ export function TermsPage() {
 
         <section>
           <h2>5. Asset Custody &amp; Liability</h2>
-          <p>Operators assume custody of allocated drone assets upon check-out scan confirmation. The Platform records chain-of-custody events for accountability. Damage or loss during custody is the responsibility of the checked-out operator per the cooperative governance agreement.</p>
+          <p>Operators assume custody of allocated drone assets upon check-out scan confirmation. The Platform records chain-of-custody events for accountability. {terms.damage_policy ? terms.damage_policy : 'Damage or loss during custody is the responsibility of the checked-out operator per the cooperative governance agreement.'}</p>
         </section>
 
         <section>
-          <h2>6. Billing &amp; Payments</h2>
-          <p>Allocation fees, standby fees, and insurance pool contributions are calculated per the cooperative governance agreement. Invoices are generated monthly with Net-30 payment terms. Disputed charges must be raised within 15 days of invoice date.</p>
+          <h2>6. Cooperative Fee Schedule</h2>
+          <p>The following uniform terms apply equally to all cooperative partners:</p>
+          <ul>
+            <li><strong>Brokerage Fee:</strong> {Number(terms.brokerage_pct)}% of booking value</li>
+            <li><strong>Allocation Fee:</strong> ${Number(terms.allocation_fee_per_drone).toLocaleString(undefined, { minimumFractionDigits: 2 })} per drone per booking</li>
+            <li><strong>Standby Fee:</strong> ${Number(terms.standby_fee_per_drone).toLocaleString(undefined, { minimumFractionDigits: 2 })} per drone for standby fleet</li>
+            <li><strong>Insurance Pool Contribution:</strong> {Number(terms.insurance_pool_pct)}% of allocation fees</li>
+            <li><strong>Payment Terms:</strong> Net-{terms.net_payment_days} days from invoice date</li>
+          </ul>
+          <p>Disputed charges must be raised within 15 days of invoice date.</p>
         </section>
 
         <section>
