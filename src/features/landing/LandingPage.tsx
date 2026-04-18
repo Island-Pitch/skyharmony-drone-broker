@@ -134,9 +134,14 @@ export function LandingPage() {
         <p className="hero-subtitle">
           Coordinating drone fleets with the precision of a master navigator
         </p>
-        <Link to="/dashboard" className="landing-cta">
-          Enter Platform
-        </Link>
+        <div className="landing-cta-group">
+          <Link to="/dashboard" className="landing-cta">
+            Enter Platform
+          </Link>
+          <Link to="/login" className="landing-cta-secondary">
+            Sign In
+          </Link>
+        </div>
       </section>
 
       <KoruDivider />
@@ -161,6 +166,15 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      <footer className="landing-footer">
+        <div className="landing-footer-links">
+          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/terms">Terms of Service</Link>
+          <Link to="/accessibility">Accessibility</Link>
+        </div>
+        <p className="landing-footer-copy">Island Pitch LLC. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
