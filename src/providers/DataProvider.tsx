@@ -21,6 +21,7 @@ import { InMemoryCustodyRepository } from '@/data/repositories/InMemoryCustodyRe
 import { InMemoryIncidentRepository } from '@/data/repositories/InMemoryIncidentRepository';
 import { seedStore } from '@/data/seed';
 import { store } from '@/data/store';
+import { apiUrl } from '@/data/repositories/http/apiClient';
 
 export interface DataContextValue {
   assetRepo: IAssetRepository;
@@ -78,8 +79,20 @@ export function DataProvider({ children }: DataProviderProps) {
 
   useEffect(() => {
     if (apiAvailable !== null) return;
-    fetch('/api/health')
-      .then((res) => setApiAvailable(res.ok))
+    fetch(apiUrl('/api/health'))
+      .then(async (res) => {
+        if (!res.ok) {
+          setApiAvailable(false);
+          return;
+        }
+        const ct = res.headers.get('content-type') ?? '';
+        if (!ct.includes('application/json')) {
+          setApiAvailable(false);
+          return;
+        }
+        await res.json().catch(() => null);
+        setApiAvailable(true);
+      })
       .catch(() => setApiAvailable(false));
   }, [apiAvailable]);
 

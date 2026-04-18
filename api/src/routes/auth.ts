@@ -96,7 +96,15 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       res.status(404).json({ error: 'User not found' });
       return;
     }
+    if (current.onboarded === 'true') {
+      res.status(403).json({ error: 'Already onboarded' });
+      return;
+    }
     if (role === 'CentralRepoAdmin' && current.role !== 'CentralRepoAdmin') {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+    if (current.role !== 'CentralRepoAdmin' && role === 'OperatorAdmin') {
       res.status(403).json({ error: 'Insufficient permissions' });
       return;
     }

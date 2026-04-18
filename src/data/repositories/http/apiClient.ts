@@ -1,5 +1,18 @@
 /** Shared HTTP client for all API calls. Handles JWT token and response envelope. */
 
+/** Absolute API origin for cross-origin Docker/production (e.g. http://localhost:4000); empty uses same-origin /api. */
+export function getApiOrigin(): string {
+  const raw = import.meta.env.VITE_API_URL;
+  if (typeof raw !== 'string' || raw.trim() === '') return '';
+  return raw.trim().replace(/\/$/, '');
+}
+
+export function apiUrl(path: string): string {
+  const base = getApiOrigin();
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return base === '' ? p : `${base}${p}`;
+}
+
 let authToken: string | null = null;
 let tokenLoaded = false;
 
@@ -55,7 +68,7 @@ export async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const res = await fetch(`/api${path}`, { ...options, headers });
+  const res = await fetch(apiUrl(`/api${path}`), { ...options, headers });
   return handleResponse<T>(res);
 }
 

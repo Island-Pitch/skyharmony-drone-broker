@@ -14,7 +14,12 @@ globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   }
   if (url.includes('/api/auth/me')) {
     return new Response(JSON.stringify({
-      data: { id: 'test-user', email: 'admin@test.dev', name: 'Test Admin', role: 'CentralRepoAdmin' },
+      data: {
+        id: 'a0000000-0000-4000-8000-000000000001',
+        email: 'admin@test.dev',
+        name: 'Test Admin',
+        role: 'CentralRepoAdmin',
+      },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
   return originalFetch(input, init);

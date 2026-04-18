@@ -13,8 +13,14 @@ import billingRouter from './routes/billing.js';
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:50080'];
+const corsOrigins =
+  typeof process.env.CORS_ORIGINS === 'string' && process.env.CORS_ORIGINS.trim() !== ''
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : defaultOrigins;
+
 // Global middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }));
+app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
 
 // Routes — all under /api

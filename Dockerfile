@@ -5,6 +5,8 @@ RUN npm ci
 COPY . .
 ARG VITE_DEMO_MODE=true
 ENV VITE_DEMO_MODE=$VITE_DEMO_MODE
+ARG VITE_API_URL=
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM node:22-alpine AS runtime

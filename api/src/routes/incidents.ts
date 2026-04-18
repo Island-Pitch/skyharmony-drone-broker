@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
-import { incidents } from '../db/schema.js';
+import { incidents, assets } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -48,6 +48,14 @@ router.post('/incidents', auth, validate(CreateIncidentSchema), async (req, res)
       reporter_id: req.user!.userId,
       status: 'open',
     }).returning();
+
+    if (body.severity === 'critical') {
+      await db
+        .update(assets)
+        .set({ status: 'maintenance', updated_at: new Date() })
+        .where(eq(assets.id, body.asset_id));
+    }
+
     res.status(201).json({ data: incident });
   } catch (err) {
     console.error('Incident create error:', err);
