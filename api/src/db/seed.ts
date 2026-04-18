@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -84,6 +84,10 @@ async function seed() {
     { id: '00000000-0000-4000-8000-000000000002', name: 'battery', description: 'Rechargeable battery pack' },
     { id: '00000000-0000-4000-8000-000000000003', name: 'charger', description: 'Battery charging station' },
     { id: '00000000-0000-4000-8000-000000000004', name: 'base_station', description: 'Ground control base station' },
+    { id: '00000000-0000-4000-8000-000000000005', name: 'trailer', description: 'Transport trailer for drone logistics' },
+    { id: '00000000-0000-4000-8000-000000000006', name: 'antenna_array', description: 'Multi-channel antenna array for extended range' },
+    { id: '00000000-0000-4000-8000-000000000007', name: 'ground_control', description: 'Ground control station with multi-drone management' },
+    { id: '00000000-0000-4000-8000-000000000008', name: 'rtk_station', description: 'Real-time kinematic positioning station' },
   ];
   for (const t of typeRows) {
     await db.insert(assetTypes).values(t).onConflictDoNothing();
@@ -191,6 +195,84 @@ async function seed() {
   }
   await db.insert(assets).values(chargerRows).onConflictDoNothing();
   console.log('  Inserted 10 chargers');
+
+  // 6b. Trailers
+  const trailerRows: (typeof assets.$inferInsert)[] = [];
+  const vehicleTypes = ['enclosed', 'flatbed', 'refrigerated'];
+  const stateAbbrevs = ['CA', 'NV', 'AZ'];
+  for (let i = 1; i <= 15; i++) {
+    const state = stateAbbrevs[i % stateAbbrevs.length]!;
+    trailerRows.push({
+      id: crypto.randomUUID(),
+      asset_type_id: typeRows[4]!.id,
+      serial_number: `TRL-${String(i).padStart(3, '0')}`,
+      manufacturer: 'TrailKing',
+      model: 'DroneHauler Pro',
+      status: 'available',
+      typed_attributes: { capacity_drones: 100, vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length], license_plate: `${state}-${String(1000 + i)}` },
+      current_operator_id: null,
+      parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(trailerRows).onConflictDoNothing();
+  console.log('  Inserted 15 trailers');
+
+  // 6c. Antenna arrays
+  const antennaRows: (typeof assets.$inferInsert)[] = [];
+  const frequencies = [2.4, 5.8, 900];
+  for (let i = 1; i <= 10; i++) {
+    antennaRows.push({
+      id: crypto.randomUUID(),
+      asset_type_id: typeRows[5]!.id,
+      serial_number: `ANT-${String(i).padStart(3, '0')}`,
+      manufacturer: 'Ubiquiti',
+      model: 'AirMax Sector',
+      status: 'available',
+      typed_attributes: { frequency_ghz: frequencies[(i - 1) % frequencies.length], range_km: 5 + Math.floor(rand() * 10), channels: 16 },
+      current_operator_id: null,
+      parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(antennaRows).onConflictDoNothing();
+  console.log('  Inserted 10 antenna arrays');
+
+  // 6d. Ground control stations
+  const gcRows: (typeof assets.$inferInsert)[] = [];
+  const swVersions = ['4.2.1', '4.3.0', '5.0.0-beta', '4.1.7'];
+  for (let i = 1; i <= 8; i++) {
+    gcRows.push({
+      id: crypto.randomUUID(),
+      asset_type_id: typeRows[6]!.id,
+      serial_number: `GCS-${String(i).padStart(3, '0')}`,
+      manufacturer: 'Verge Aero',
+      model: 'Command Center',
+      status: 'available',
+      typed_attributes: { software_version: swVersions[(i - 1) % swVersions.length], max_drones: 500, display_count: 4 },
+      current_operator_id: null,
+      parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(gcRows).onConflictDoNothing();
+  console.log('  Inserted 8 ground control stations');
+
+  // 6e. RTK stations
+  const rtkRows: (typeof assets.$inferInsert)[] = [];
+  const constellations = ['GPS+GLONASS', 'GPS+GLONASS+Galileo', 'GPS+BeiDou'];
+  for (let i = 1; i <= 5; i++) {
+    rtkRows.push({
+      id: crypto.randomUUID(),
+      asset_type_id: typeRows[7]!.id,
+      serial_number: `RTK-${String(i).padStart(3, '0')}`,
+      manufacturer: 'Trimble',
+      model: 'R12i',
+      status: 'available',
+      typed_attributes: { accuracy_cm: 2, constellation: constellations[(i - 1) % constellations.length], range_km: 10 },
+      current_operator_id: null,
+      parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(rtkRows).onConflictDoNothing();
+  console.log('  Inserted 5 RTK stations');
 
   // 7. Bookings
   const sampleBookings = [
@@ -492,6 +574,64 @@ async function seed() {
   }
   await db.insert(invoices).values(invoiceRows).onConflictDoNothing();
   console.log(`  Inserted ${invoiceRows.length} invoices`);
+
+  // 10. Settlements — 3 sample settlements for different operators/periods
+  const settlementRows: (typeof settlements.$inferInsert)[] = [
+    {
+      id: '00000000-0000-4000-8000-c00000000001',
+      operator_id: operators[0]!.id,
+      period_start: '2026-03-01',
+      period_end: '2026-03-31',
+      status: 'paid',
+      total_due: '40568.50',
+      total_payable: '40568.50',
+      net_amount: '37728.71',
+      deductions: {
+        insurance_pool: 2839.80,
+        damage_charges: 0,
+        total_deductions: 2839.80,
+      },
+      payment_reference: 'ACH-2026-0401-NB',
+      approved_by: adminId,
+      approved_at: new Date(now.getTime() - 10 * 86400000),
+      paid_at: new Date(now.getTime() - 5 * 86400000),
+    },
+    {
+      id: '00000000-0000-4000-8000-c00000000002',
+      operator_id: operators[1]!.id,
+      period_start: '2026-03-01',
+      period_end: '2026-03-31',
+      status: 'approved',
+      total_due: '35125.00',
+      total_payable: '35125.00',
+      net_amount: '31166.25',
+      deductions: {
+        insurance_pool: 2458.75,
+        damage_charges: 1500,
+        total_deductions: 3958.75,
+      },
+      approved_by: adminId,
+      approved_at: new Date(now.getTime() - 3 * 86400000),
+    },
+    {
+      id: '00000000-0000-4000-8000-c00000000003',
+      operator_id: operators[2]!.id,
+      period_start: '2026-04-01',
+      period_end: '2026-04-15',
+      status: 'draft',
+      total_due: '28750.00',
+      total_payable: '28750.00',
+      net_amount: '26737.50',
+      deductions: {
+        insurance_pool: 2012.50,
+        damage_charges: 0,
+        total_deductions: 2012.50,
+      },
+    },
+  ];
+
+  await db.insert(settlements).values(settlementRows).onConflictDoNothing();
+  console.log(`  Inserted ${settlementRows.length} settlements`);
 
   console.log('Seed complete!');
   await pool.end();

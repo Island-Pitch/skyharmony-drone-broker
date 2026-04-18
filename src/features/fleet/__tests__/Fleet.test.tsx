@@ -82,4 +82,18 @@ describe('Fleet', () => {
       expect(screen.getByRole('table')).toBeInTheDocument();
     });
   });
+
+  it('renders asset type filter dropdown', async () => {
+    renderFleet();
+    await waitFor(() => {
+      expect(screen.getByText(/filter by type/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders type column in table', async () => {
+    renderFleet();
+    await waitFor(() => {
+      expect(screen.getByText('Type')).toBeInTheDocument();
+    });
+  });
 });
