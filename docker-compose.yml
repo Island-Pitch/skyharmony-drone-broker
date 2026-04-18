@@ -26,7 +26,13 @@ services:
       DATABASE_URL: postgres://skyharmony:skyharmony_dev@db:5432/skyharmony
       JWT_SECRET: skyharmony-dev-secret
       PORT: 4000
-      NODE_ENV: development
+      NODE_ENV: production
+    command: >
+      sh -c "
+        npx drizzle-kit migrate &&
+        node dist/db/seed.js &&
+        node dist/index.js
+      "
 
   app:
     build: .
@@ -36,6 +42,12 @@ services:
       - api
     environment:
       NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   pgdata:

@@ -1,43 +1,75 @@
-import { useState, useEffect } from 'react';
-import { RevenueService, type RevenueSummary, type OperatorRevenue } from '@/services/RevenueService';
+import { useState, useEffect, useContext } from 'react';
+import { DataContext } from '@/providers/DataProvider';
+import { apiGet } from '@/data/repositories/http/apiClient';
 
-const service = new RevenueService();
+interface OperatorBilling {
+  operator_id: string;
+  operator_name: string;
+  allocation_revenue: number;
+  standby_revenue: number;
+  total_revenue: number;
+  booking_count: number;
+}
+
+interface BillingSummary {
+  total_revenue: number;
+  allocation_fee_revenue: number;
+  standby_fee_revenue: number;
+  insurance_pool: number;
+  pending_invoices: number;
+  operators: OperatorBilling[];
+}
 
 function formatCurrency(amount: number): string {
   return `$${amount.toLocaleString()}`;
 }
 
 export function BillingDashboard() {
-  const [summary, setSummary] = useState<RevenueSummary | null>(null);
-  const [operators, setOperators] = useState<OperatorRevenue[]>([]);
+  const ctx = useContext(DataContext);
+  const [summary, setSummary] = useState<BillingSummary | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const [s, o] = await Promise.all([
-        service.getSummary(),
-        service.getOperatorBreakdown(),
-      ]);
-      setSummary(s);
-      setOperators(o);
-    })();
-  }, []);
+    if (ctx?.mode === 'api') {
+      apiGet<BillingSummary>('/billing/summary')
+        .then((res) => setSummary(res.data))
+        .catch(() => setSummary(null))
+        .finally(() => setLoading(false));
+    } else {
+      // Demo mode fallback
+      setSummary({
+        total_revenue: 284500,
+        allocation_fee_revenue: 198150,
+        standby_fee_revenue: 86350,
+        insurance_pool: 13871,
+        pending_invoices: 8,
+        operators: [
+          { operator_id: '1', operator_name: 'NightBrite Drones', allocation_revenue: 56000, standby_revenue: 25500, total_revenue: 81500, booking_count: 5 },
+          { operator_id: '2', operator_name: 'Orion Skies', allocation_revenue: 49000, standby_revenue: 20750, total_revenue: 69750, booking_count: 5 },
+          { operator_id: '3', operator_name: 'Vegas Drone Works', allocation_revenue: 42000, standby_revenue: 22750, total_revenue: 64750, booking_count: 5 },
+          { operator_id: '4', operator_name: 'Patriotic Air', allocation_revenue: 28000, standby_revenue: 12250, total_revenue: 40250, booking_count: 5 },
+          { operator_id: '5', operator_name: 'Sky Harmony Fleet', allocation_revenue: 23150, standby_revenue: 5100, total_revenue: 28250, booking_count: 4 },
+        ],
+      });
+      setLoading(false);
+    }
+  }, [ctx?.mode]);
 
-  if (!summary) {
+  if (loading || !summary) {
     return (
       <div className="page">
         <h2>Billing &amp; Revenue</h2>
-        <p>Loading...</p>
+        <p>Loading billing data...</p>
       </div>
     );
   }
 
-  const maxTotal = Math.max(...operators.map((o) => o.total));
+  const maxTotal = Math.max(...summary.operators.map((o) => o.total_revenue), 1);
 
   return (
     <div className="page">
       <h2>Billing &amp; Revenue</h2>
 
-      {/* Revenue breakdown cards */}
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">
           <span className="stat-value revenue-total">{formatCurrency(summary.total_revenue)}</span>
@@ -45,11 +77,11 @@ export function BillingDashboard() {
         </div>
         <div className="stat-card">
           <span className="stat-value">{formatCurrency(summary.allocation_fee_revenue)}</span>
-          <span className="stat-label">Allocation Fee Revenue</span>
+          <span className="stat-label">Allocation Fees</span>
         </div>
         <div className="stat-card">
           <span className="stat-value">{formatCurrency(summary.standby_fee_revenue)}</span>
-          <span className="stat-label">Standby Fee Revenue</span>
+          <span className="stat-label">Standby Fees</span>
         </div>
         <div className="stat-card">
           <span className="stat-value">{summary.pending_invoices}</span>
@@ -57,90 +89,53 @@ export function BillingDashboard() {
         </div>
       </div>
 
-      {/* Insurance pool total */}
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">
-          <span className="stat-value">
-            {formatCurrency(operators.reduce((s, o) => s + o.insurance_pool, 0))}
-          </span>
-          <span className="stat-label">Insurance Pool Contributions</span>
+          <span className="stat-value">{formatCurrency(summary.insurance_pool)}</span>
+          <span className="stat-label">Insurance Pool (7%)</span>
         </div>
       </div>
 
-      {/* Per-operator revenue bar chart (pure CSS) */}
       <div className="dashboard-widget">
         <h3>Per-Operator Revenue Split</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {operators.map((op) => (
-            <div key={op.operator_name} className="operator-row">
+          {summary.operators.map((op) => (
+            <div key={op.operator_id} className="operator-row">
               <div className="operator-info">
                 <span className="operator-name">{op.operator_name}</span>
-                <span className="operator-stats">{formatCurrency(op.total)}</span>
+                <span className="operator-stats">{formatCurrency(op.total_revenue)} ({op.booking_count} bookings)</span>
               </div>
-              <div
-                data-testid="revenue-bar"
-                style={{
-                  display: 'flex',
-                  height: '24px',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  width: `${(op.total / maxTotal) * 100}%`,
-                  minWidth: '40px',
-                }}
-              >
-                <div
-                  style={{
-                    width: `${(op.allocation_fee / op.total) * 100}%`,
-                    background: 'var(--color-primary)',
-                  }}
-                  title={`Allocation Fee: ${formatCurrency(op.allocation_fee)}`}
-                />
-                <div
-                  style={{
-                    width: `${(op.standby_fee / op.total) * 100}%`,
-                    background: 'var(--color-warning)',
-                  }}
-                  title={`Standby Fee: ${formatCurrency(op.standby_fee)}`}
-                />
-                <div
-                  style={{
-                    width: `${(op.insurance_pool / op.total) * 100}%`,
-                    background: 'var(--color-success)',
-                  }}
-                  title={`Insurance Pool: ${formatCurrency(op.insurance_pool)}`}
-                />
+              <div style={{ display: 'flex', height: '24px', borderRadius: '4px', overflow: 'hidden', width: `${(op.total_revenue / maxTotal) * 100}%`, minWidth: '40px' }}>
+                <div style={{ width: `${(op.allocation_revenue / op.total_revenue) * 100}%`, background: 'var(--color-primary)' }} title={`Allocation: ${formatCurrency(op.allocation_revenue)}`} />
+                <div style={{ width: `${(op.standby_revenue / op.total_revenue) * 100}%`, background: 'var(--color-warning)' }} title={`Standby: ${formatCurrency(op.standby_revenue)}`} />
               </div>
             </div>
           ))}
         </div>
-
-        {/* Legend */}
         <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', fontSize: '0.8rem' }}>
-          <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--color-primary)', borderRadius: '2px', marginRight: '4px', verticalAlign: 'middle' }} /> Allocation Fee</span>
-          <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--color-warning)', borderRadius: '2px', marginRight: '4px', verticalAlign: 'middle' }} /> Standby Fee</span>
-          <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--color-success)', borderRadius: '2px', marginRight: '4px', verticalAlign: 'middle' }} /> Insurance Pool</span>
+          <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--color-primary)', borderRadius: '2px', marginRight: '4px', verticalAlign: 'middle' }} /> Allocation</span>
+          <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--color-warning)', borderRadius: '2px', marginRight: '4px', verticalAlign: 'middle' }} /> Standby</span>
         </div>
       </div>
 
-      {/* Detail table */}
       <table className="data-table" style={{ marginTop: '1.5rem' }}>
         <thead>
           <tr>
             <th>Operator</th>
-            <th>Allocation Fee</th>
-            <th>Standby Fee</th>
-            <th>Insurance Pool</th>
+            <th>Bookings</th>
+            <th>Allocation Fees</th>
+            <th>Standby Fees</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          {operators.map((op) => (
-            <tr key={op.operator_name}>
+          {summary.operators.map((op) => (
+            <tr key={op.operator_id}>
               <td>{op.operator_name}</td>
-              <td>{formatCurrency(op.allocation_fee)}</td>
-              <td>{formatCurrency(op.standby_fee)}</td>
-              <td>{formatCurrency(op.insurance_pool)}</td>
-              <td><strong>{formatCurrency(op.total)}</strong></td>
+              <td>{op.booking_count}</td>
+              <td>{formatCurrency(op.allocation_revenue)}</td>
+              <td>{formatCurrency(op.standby_revenue)}</td>
+              <td><strong>{formatCurrency(op.total_revenue)}</strong></td>
             </tr>
           ))}
         </tbody>
