@@ -68,9 +68,10 @@ export function useInvoices() {
   );
 
   const payInvoice = useCallback(
-    async (invoiceId: string, paymentMethod: string = 'credit_card') => {
+    async (invoiceId: string, paymentMethod: string = 'credit_card', paymentReference?: string) => {
       const res = await apiPost<Invoice>(`/invoices/${invoiceId}/pay`, {
         payment_method: paymentMethod,
+        payment_reference: paymentReference,
       });
       await refreshInvoices();
       return res.data;
@@ -78,5 +79,17 @@ export function useInvoices() {
     [refreshInvoices],
   );
 
-  return { invoices, summary, loading, generateInvoice, payInvoice, refreshInvoices };
+  const sendInvoice = useCallback(
+    async (invoiceId: string) => {
+      const res = await apiPost<{ sent: boolean; method: string; message: string }>(
+        `/invoices/${invoiceId}/send`,
+        {},
+      );
+      await refreshInvoices();
+      return res.data;
+    },
+    [refreshInvoices],
+  );
+
+  return { invoices, summary, loading, generateInvoice, payInvoice, sendInvoice, refreshInvoices };
 }
