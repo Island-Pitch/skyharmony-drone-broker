@@ -70,20 +70,20 @@ describe('Demo click-through (SHD-54)', () => {
       expect(screen.getByText('Total Assets')).toBeInTheDocument();
     });
 
-    // Navigate to Fleet
-    await user.click(screen.getByText('Fleet'));
+    // Navigate to Fleet (use sidebar nav specifically)
+    await user.click(screen.getAllByText('Fleet')[0]!);
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Fleet/i })).toBeInTheDocument();
     });
 
     // Navigate to Billing
-    await user.click(screen.getByText('Billing'));
+    await user.click(screen.getAllByText('Billing')[0]!);
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Billing/i })).toBeInTheDocument();
     });
 
     // Navigate back to Dashboard
-    await user.click(screen.getByText('Dashboard'));
+    await user.click(screen.getAllByText('Dashboard')[0]!);
     await waitFor(() => {
       expect(screen.getByText('Total Assets')).toBeInTheDocument();
     });

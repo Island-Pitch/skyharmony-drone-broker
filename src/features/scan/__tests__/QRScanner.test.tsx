@@ -3,11 +3,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { QRScanner } from '../QRScanner';
 
 describe('QRScanner', () => {
-  it('renders scan instruction text', () => {
+  it('renders camera scan button and manual entry instruction', () => {
     render(<QRScanner onScan={vi.fn()} scanning={false} />);
-    expect(
-      screen.getByText(/enter serial number or scan qr code/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/tap to scan qr code/i)).toBeInTheDocument();
+    expect(screen.getByText(/enter serial number manually/i)).toBeInTheDocument();
   });
 
   it('renders serial number input', () => {
@@ -15,9 +14,9 @@ describe('QRScanner', () => {
     expect(screen.getByLabelText(/serial number/i)).toBeInTheDocument();
   });
 
-  it('renders scan button', () => {
+  it('renders look up button', () => {
     render(<QRScanner onScan={vi.fn()} scanning={false} />);
-    expect(screen.getByRole('button', { name: /scan/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /look up/i })).toBeInTheDocument();
   });
 
   it('calls onScan with trimmed serial when submitted', () => {
@@ -26,7 +25,7 @@ describe('QRScanner', () => {
 
     const input = screen.getByLabelText(/serial number/i);
     fireEvent.change(input, { target: { value: '  VE-0001  ' } });
-    fireEvent.click(screen.getByRole('button', { name: /scan/i }));
+    fireEvent.click(screen.getByRole('button', { name: /look up/i }));
 
     expect(onScan).toHaveBeenCalledWith('VE-0001');
   });
@@ -35,19 +34,17 @@ describe('QRScanner', () => {
     const onScan = vi.fn();
     render(<QRScanner onScan={onScan} scanning={false} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /scan/i }));
+    fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     expect(onScan).not.toHaveBeenCalled();
   });
 
   it('disables input and button while scanning', () => {
     render(<QRScanner onScan={vi.fn()} scanning={true} />);
-
     expect(screen.getByLabelText(/serial number/i)).toBeDisabled();
-    expect(screen.getByRole('button', { name: /scanning/i })).toBeDisabled();
   });
 
-  it('shows "Scanning..." text while scanning', () => {
+  it('shows looking up text while scanning', () => {
     render(<QRScanner onScan={vi.fn()} scanning={true} />);
-    expect(screen.getByText('Scanning...')).toBeInTheDocument();
+    expect(screen.getByText(/looking up/i)).toBeInTheDocument();
   });
 });

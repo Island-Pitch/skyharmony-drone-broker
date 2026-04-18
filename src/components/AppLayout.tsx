@@ -78,6 +78,20 @@ export function AppLayout({ routes }: AppLayoutProps) {
           </button>
         </div>
       </aside>
+      <nav className="mobile-nav">
+        {sideRoutes.slice(0, 4).map((route) => (
+          <NavLink
+            key={route.path}
+            to={`/${route.path}`}
+            className={({ isActive }) =>
+              `mobile-nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <NavIcon name={route.icon} />
+            <span>{route.label}</span>
+          </NavLink>
+        ))}
+      </nav>
       <main className="main-content">
         <Outlet />
       </main>

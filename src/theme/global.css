@@ -1217,6 +1217,28 @@ form {
 }
 
 /* ============================================================
+   Mobile Bottom Navigation (hidden on desktop)
+   ============================================================ */
+
+.mobile-nav {
+  display: none;
+}
+
+/* ============================================================
+   Table Scroll Wrapper
+   ============================================================ */
+
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+}
+
+.table-scroll-wrapper .data-table {
+  min-width: 600px;
+}
+
+/* ============================================================
    Responsive Breakpoints
    ============================================================ */
 
@@ -1231,22 +1253,129 @@ form {
 }
 
 @media (max-width: 768px) {
+  /* --- Mobile Bottom Nav --- */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(6, 10, 16, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    padding: 0.5rem 0;
+    z-index: 1000;
+    justify-content: space-around;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 0.65rem;
+    transition: color 0.15s;
+  }
+
+  .mobile-nav-item.active { color: var(--color-te-ra); }
+  .mobile-nav-item svg { width: 20px; height: 20px; }
+
+  /* --- Sidebar & Main Content --- */
+  .sidebar { display: none; }
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    padding-bottom: 5rem; /* space for bottom nav */
+  }
+
+  /* --- Page Headings --- */
+  .page h2 { font-size: 1.35rem; margin-bottom: 1.25rem; }
+
+  /* --- KPI Grid --- */
   .kpi-grid {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
-  .sidebar { display: none; }
-  .main-content { margin-left: 0; padding: 1rem; }
-
+  /* --- Stat Cards --- */
+  .stat-card { padding: 1.25rem; }
   .stat-value { font-size: 1.5rem; }
 
+  /* --- Dashboard Widgets --- */
+  .dashboard-widget { padding: 1rem; }
+
+  /* --- Data Tables --- */
+  .table-scroll-wrapper .data-table { min-width: 500px; }
+
+  /* --- Forms --- */
+  form { max-width: 100%; }
+  input, select, textarea { min-height: 44px; }
+  .btn-primary { width: 100%; min-height: 44px; }
+
+  /* --- Tabs --- */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  /* --- Landing Page --- */
   .landing-hero h1 { font-size: 2rem; }
+  .landing-hero .hero-tagline { font-size: 1rem; }
+  .landing-hero .hero-subtitle { font-size: 0.95rem; }
+  .landing-hero { padding: 2.5rem 1.25rem; min-height: 60vh; }
+  .landing-features { padding: 2.5rem 1.25rem 4rem; }
   .landing-features-grid { grid-template-columns: 1fr; }
   .landing-personas-grid { grid-template-columns: 1fr; }
   .landing-values-grid { grid-template-columns: 1fr; }
+  .landing-feature-card { padding: 1.5rem; }
+  .landing-persona-card { padding: 1.25rem; }
+
+  /* CTAs stack vertically */
+  .landing-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .landing-cta-group .landing-cta,
+  .landing-cta-group .landing-cta-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .landing-bottom-cta { padding: 2.5rem 1.25rem; }
+
+  /* --- Scan Page --- */
+  .scan-frame,
+  .scan-input { width: 100%; max-width: 100%; }
+
+  /* --- Mode Indicator (above bottom nav) --- */
+  .mode-indicator { bottom: 4.5rem; }
 }
 
 @media (max-width: 480px) {
+  /* --- Stats Grid (force 2 columns) --- */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .stat-card { padding: 1rem; }
+  .stat-value { font-size: 1.25rem; }
+  .stat-label { font-size: 0.7rem; }
+
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1257,6 +1386,14 @@ form {
 
   .data-table { font-size: 0.8rem; }
   .data-table th, .data-table td { padding: 0.5rem; }
+
+  /* --- Landing Hero --- */
+  .landing-hero h1 { font-size: 1.6rem; }
+  .landing-hero .hero-tagline { font-size: 0.85rem; letter-spacing: 0.06em; }
+
+  /* --- Dashboard Widgets --- */
+  .dashboard-widget { padding: 0.75rem; }
+  .dashboard-widget h3 { font-size: 1rem; }
 }
 
 /* === Login Page === */

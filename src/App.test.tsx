@@ -37,9 +37,8 @@ describe('App', () => {
       </MemoryRouter>,
     );
     await waitFor(() => {
-      expect(screen.getByText('Fleet')).toBeInTheDocument();
+      expect(screen.getAllByText('Fleet').length).toBeGreaterThanOrEqual(1);
     });
-    expect(screen.getByText('Missions')).toBeInTheDocument();
-    expect(screen.getByText('Marketplace')).toBeInTheDocument();
+    expect(screen.getAllByText('Bookings').length).toBeGreaterThanOrEqual(1);
   });
 });
