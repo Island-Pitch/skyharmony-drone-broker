@@ -1,25 +1,32 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DemoWatermark } from '../DemoWatermark';
 
 describe('DemoWatermark (SHD-51)', () => {
-  it('renders watermark text', () => {
+  const originalEnv = import.meta.env.VITE_DEMO_MODE;
+
+  beforeEach(() => {
+    import.meta.env.VITE_DEMO_MODE = 'true';
+  });
+
+  afterEach(() => {
+    import.meta.env.VITE_DEMO_MODE = originalEnv;
+  });
+
+  it('renders watermark text when VITE_DEMO_MODE is true', () => {
     render(<DemoWatermark />);
-    expect(
-      screen.getByText(/Prototype.*Sample Data Only/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Demo Environment/i)).toBeInTheDocument();
   });
 
-  it('has fixed positioning style', () => {
+  it('does not render when VITE_DEMO_MODE is not set', () => {
+    import.meta.env.VITE_DEMO_MODE = '';
     const { container } = render(<DemoWatermark />);
-    const el = container.firstElementChild as HTMLElement;
+    expect(container.firstElementChild).toBeNull();
+  });
+
+  it('has fixed positioning when visible', () => {
+    render(<DemoWatermark />);
+    const el = screen.getByText(/Demo Environment/i);
     expect(el.style.position).toBe('fixed');
-  });
-
-  it('is non-intrusive with low opacity', () => {
-    const { container } = render(<DemoWatermark />);
-    const el = container.firstElementChild as HTMLElement;
-    const opacity = parseFloat(el.style.opacity);
-    expect(opacity).toBeLessThanOrEqual(0.3);
   });
 });

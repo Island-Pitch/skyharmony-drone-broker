@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import type { AppRoute } from '@/routing/appRoutes';
 import { NavIcon } from './NavIcon';
+import { DemoWatermark } from './DemoWatermark';
 import { useAuth } from '@/auth/useAuth';
 import { logout, isAuthenticated } from '@/auth/authService';
 
@@ -80,6 +81,7 @@ export function AppLayout({ routes }: AppLayoutProps) {
       <main className="main-content">
         <Outlet />
       </main>
+      <DemoWatermark />
     </div>
   );
 }
