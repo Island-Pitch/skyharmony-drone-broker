@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings } from './schema.js';
+import { users, assetTypes, assets, bookings, manifests, transportLegs, maintenanceRules, maintenanceTickets } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -245,6 +245,212 @@ async function seed() {
 
   await db.insert(bookings).values(bookingRows).onConflictDoNothing();
   console.log(`  Inserted ${bookingRows.length} bookings`);
+
+  // 8. Manifests + transport legs
+  const manifestData = [
+    {
+      id: crypto.randomUUID(),
+      booking_id: bookingRows[0]!.id!,
+      status: 'in_transit',
+      created_by: adminId,
+      assets: droneRows.slice(0, 5).map((d) => d.id!),
+      pickup_location: 'SkyHarmony Warehouse, Los Angeles, CA',
+      delivery_location: bookingRows[0]!.location,
+      pickup_date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+      delivery_date: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+      notes: 'Priority shipment for confirmed show',
+    },
+    {
+      id: crypto.randomUUID(),
+      booking_id: bookingRows[2]!.id!,
+      status: 'draft',
+      created_by: adminId,
+      assets: droneRows.slice(5, 10).map((d) => d.id!),
+      pickup_location: 'SkyHarmony Warehouse, Los Angeles, CA',
+      delivery_location: bookingRows[2]!.location,
+      pickup_date: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      delivery_date: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000),
+      notes: 'Staging for Anaheim event',
+    },
+    {
+      id: crypto.randomUUID(),
+      booking_id: bookingRows[9]!.id!,
+      status: 'delivered',
+      created_by: adminId,
+      assets: droneRows.slice(10, 15).map((d) => d.id!),
+      pickup_location: 'SkyHarmony Warehouse, Henderson, NV',
+      delivery_location: bookingRows[9]!.location,
+      pickup_date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+      delivery_date: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
+      notes: 'Las Vegas show delivery complete',
+    },
+  ];
+
+  await db.insert(manifests).values(manifestData).onConflictDoNothing();
+  console.log(`  Inserted ${manifestData.length} manifests`);
+
+  const legData = [
+    {
+      manifest_id: manifestData[0]!.id,
+      leg_number: 1,
+      origin: 'SkyHarmony Warehouse, LA',
+      destination: 'Staging Area, Los Angeles',
+      status: 'complete',
+      driver_name: 'Mike Rodriguez',
+      vehicle_info: 'Ford Transit #SH-101',
+      departed_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+      arrived_at: new Date(now.getTime() - 1.5 * 24 * 60 * 60 * 1000),
+    },
+    {
+      manifest_id: manifestData[0]!.id,
+      leg_number: 2,
+      origin: 'Staging Area, Los Angeles',
+      destination: bookingRows[0]!.location,
+      status: 'in_transit',
+      driver_name: 'Sarah Chen',
+      vehicle_info: 'Sprinter Van #SH-205',
+      departed_at: new Date(now.getTime() - 0.5 * 24 * 60 * 60 * 1000),
+      arrived_at: null,
+    },
+    {
+      manifest_id: manifestData[2]!.id,
+      leg_number: 1,
+      origin: 'SkyHarmony Warehouse, Henderson, NV',
+      destination: 'Las Vegas, NV',
+      status: 'complete',
+      driver_name: 'James Park',
+      vehicle_info: 'Box Truck #SH-310',
+      departed_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000),
+      arrived_at: new Date(now.getTime() - 3.5 * 24 * 60 * 60 * 1000),
+    },
+  ];
+
+  await db.insert(transportLegs).values(legData).onConflictDoNothing();
+  console.log(`  Inserted ${legData.length} transport legs`);
+
+  // 9. Maintenance rules (default thresholds)
+  const ruleRows = [
+    {
+      id: '00000000-0000-4000-8000-a00e00000001',
+      asset_type_id: null,
+      rule_name: 'Flight hours mandatory ground (>= 2000)',
+      field: 'flight_hours',
+      operator: 'gte',
+      threshold_value: '2000',
+      severity: 'mandatory_ground',
+      enabled: true,
+    },
+    {
+      id: '00000000-0000-4000-8000-a00e00000002',
+      asset_type_id: null,
+      rule_name: 'Flight hours warning (>= 1800)',
+      field: 'flight_hours',
+      operator: 'gte',
+      threshold_value: '1800',
+      severity: 'warning',
+      enabled: true,
+    },
+    {
+      id: '00000000-0000-4000-8000-a00e00000003',
+      asset_type_id: null,
+      rule_name: 'Battery cycles mandatory ground (>= 500)',
+      field: 'battery_cycles',
+      operator: 'gte',
+      threshold_value: '500',
+      severity: 'mandatory_ground',
+      enabled: true,
+    },
+    {
+      id: '00000000-0000-4000-8000-a00e00000004',
+      asset_type_id: null,
+      rule_name: 'Battery cycles warning (>= 450)',
+      field: 'battery_cycles',
+      operator: 'gte',
+      threshold_value: '450',
+      severity: 'warning',
+      enabled: true,
+    },
+  ];
+
+  for (const r of ruleRows) {
+    await db.insert(maintenanceRules).values(r).onConflictDoNothing();
+  }
+  console.log('  Inserted 4 maintenance rules');
+
+  // 9. Sample maintenance tickets
+  const highHoursDrones = droneRows.filter((d) => Number(d.flight_hours ?? 0) >= 1800).slice(0, 3);
+  const highCycleDrones = droneRows.filter((d) => (d.battery_cycles ?? 0) >= 450).slice(0, 2);
+
+  const sampleTickets: (typeof maintenanceTickets.$inferInsert)[] = [];
+
+  if (highHoursDrones[0]) {
+    sampleTickets.push({
+      id: '00000000-0000-4000-8000-tkt000000001',
+      asset_id: highHoursDrones[0].id!,
+      rule_id: ruleRows[1]!.id,
+      ticket_type: 'threshold',
+      status: 'open',
+      severity: 'warning',
+      description: `Flight hours at ${highHoursDrones[0].flight_hours} — approaching 2000 limit`,
+    });
+  }
+  if (highHoursDrones[1]) {
+    sampleTickets.push({
+      id: '00000000-0000-4000-8000-tkt000000002',
+      asset_id: highHoursDrones[1].id!,
+      rule_id: ruleRows[0]!.id,
+      ticket_type: 'threshold',
+      status: 'assigned',
+      severity: 'mandatory_ground',
+      description: `Flight hours at ${highHoursDrones[1].flight_hours} — exceeds 2000 limit`,
+      assigned_to: adminId,
+    });
+  }
+  if (highHoursDrones[2]) {
+    sampleTickets.push({
+      id: '00000000-0000-4000-8000-tkt000000003',
+      asset_id: highHoursDrones[2].id!,
+      rule_id: ruleRows[1]!.id,
+      ticket_type: 'threshold',
+      status: 'in_progress',
+      severity: 'warning',
+      description: `Flight hours at ${highHoursDrones[2].flight_hours} — approaching 2000 limit`,
+      assigned_to: adminId,
+      parts_needed: 'Motor bearing replacement kit',
+    });
+  }
+  if (highCycleDrones[0]) {
+    sampleTickets.push({
+      id: '00000000-0000-4000-8000-tkt000000004',
+      asset_id: highCycleDrones[0].id!,
+      rule_id: ruleRows[3]!.id,
+      ticket_type: 'threshold',
+      status: 'verification',
+      severity: 'warning',
+      description: `Battery cycles at ${highCycleDrones[0].battery_cycles} — approaching 500 limit`,
+      assigned_to: adminId,
+      resolution_notes: 'Battery inspected and recalibrated',
+    });
+  }
+  if (highCycleDrones[1]) {
+    sampleTickets.push({
+      id: '00000000-0000-4000-8000-tkt000000005',
+      asset_id: highCycleDrones[1].id!,
+      rule_id: ruleRows[2]!.id,
+      ticket_type: 'threshold',
+      status: 'complete',
+      severity: 'mandatory_ground',
+      description: `Battery cycles at ${highCycleDrones[1].battery_cycles} — exceeds 500 limit`,
+      assigned_to: adminId,
+      resolution_notes: 'Battery replaced with new unit',
+      completed_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
+    });
+  }
+
+  for (const t of sampleTickets) {
+    await db.insert(maintenanceTickets).values(t).onConflictDoNothing();
+  }
+  console.log(`  Inserted ${sampleTickets.length} maintenance tickets`);
 
   console.log('Seed complete!');
   await pool.end();

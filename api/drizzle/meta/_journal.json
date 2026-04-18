@@ -15,6 +15,20 @@
       "when": 1776477967686,
       "tag": "0001_daffy_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776483560374,
+      "tag": "0002_supreme_punisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776570000000,
+      "tag": "0003_maintenance_rules_tickets",
+      "breakpoints": true
     }
   ]
 }

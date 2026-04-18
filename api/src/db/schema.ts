@@ -7,6 +7,7 @@ import {
   integer,
   numeric,
   jsonb,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -104,6 +105,41 @@ export const custodyEvents = pgTable('custody_events', {
 });
 
 /* ------------------------------------------------------------------ */
+/*  manifests                                                          */
+/* ------------------------------------------------------------------ */
+export const manifests = pgTable('manifests', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  booking_id: uuid('booking_id').references(() => bookings.id),
+  status: varchar('status', { length: 50 }).notNull().default('draft'),
+  created_by: uuid('created_by').references(() => users.id),
+  assets: jsonb('assets').default([]),
+  pickup_location: varchar('pickup_location', { length: 255 }),
+  delivery_location: varchar('delivery_location', { length: 255 }),
+  pickup_date: timestamp('pickup_date'),
+  delivery_date: timestamp('delivery_date'),
+  notes: text('notes'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  transport_legs                                                     */
+/* ------------------------------------------------------------------ */
+export const transportLegs = pgTable('transport_legs', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  manifest_id: uuid('manifest_id').references(() => manifests.id),
+  leg_number: integer('leg_number').notNull(),
+  origin: varchar('origin', { length: 255 }),
+  destination: varchar('destination', { length: 255 }),
+  status: varchar('status', { length: 50 }).notNull().default('pending'),
+  driver_name: varchar('driver_name', { length: 255 }),
+  vehicle_info: varchar('vehicle_info', { length: 255 }),
+  departed_at: timestamp('departed_at'),
+  arrived_at: timestamp('arrived_at'),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
 /*  incidents                                                          */
 /* ------------------------------------------------------------------ */
 export const incidents = pgTable('incidents', {
@@ -118,4 +154,38 @@ export const incidents = pgTable('incidents', {
   resolution_notes: text('resolution_notes'),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  maintenance_rules                                                  */
+/* ------------------------------------------------------------------ */
+export const maintenanceRules = pgTable('maintenance_rules', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  asset_type_id: uuid('asset_type_id').references(() => assetTypes.id),
+  rule_name: varchar('rule_name', { length: 255 }).notNull(),
+  field: varchar('field', { length: 100 }).notNull(),
+  operator: varchar('operator', { length: 10 }).notNull(),
+  threshold_value: varchar('threshold_value', { length: 100 }).notNull(),
+  severity: varchar('severity', { length: 30 }).notNull(),
+  enabled: boolean('enabled').default(true),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  maintenance_tickets                                                */
+/* ------------------------------------------------------------------ */
+export const maintenanceTickets = pgTable('maintenance_tickets', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  asset_id: uuid('asset_id').references(() => assets.id),
+  rule_id: uuid('rule_id').references(() => maintenanceRules.id),
+  ticket_type: varchar('ticket_type', { length: 30 }).notNull(),
+  status: varchar('status', { length: 30 }).notNull().default('open'),
+  severity: varchar('severity', { length: 30 }).notNull(),
+  description: text('description').notNull(),
+  assigned_to: uuid('assigned_to').references(() => users.id),
+  parts_needed: text('parts_needed'),
+  resolution_notes: text('resolution_notes'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+  completed_at: timestamp('completed_at'),
 });

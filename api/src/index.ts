@@ -9,6 +9,8 @@ import scanRouter from './routes/scan.js';
 import incidentsRouter from './routes/incidents.js';
 import allocationRouter from './routes/allocation.js';
 import billingRouter from './routes/billing.js';
+import logisticsRouter from './routes/logistics.js';
+import maintenanceRouter from './routes/maintenance.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -32,6 +34,8 @@ app.use('/api', scanRouter);
 app.use('/api', incidentsRouter);
 app.use('/api', allocationRouter);
 app.use('/api', billingRouter);
+app.use('/api', logisticsRouter);
+app.use('/api', maintenanceRouter);
 
 app.listen(PORT, () => {
   console.log(`SkyHarmony API listening on port ${PORT}`);
