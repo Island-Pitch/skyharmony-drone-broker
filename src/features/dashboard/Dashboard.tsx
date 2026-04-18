@@ -1,5 +1,9 @@
 import { useFleetSummary } from '@/hooks/useFleetSummary';
-import { SummaryCard } from './SummaryCard';
+import { StatusKpiCards } from './StatusKpiCards';
+import { BookingsQueue } from './BookingsQueue';
+import { MaintenanceAlerts } from './MaintenanceAlerts';
+import { RevenueSummary } from './RevenueSummary';
+import { OperatorBreakdown } from './OperatorBreakdown';
 
 export function Dashboard() {
   const { summary, loading } = useFleetSummary();
@@ -16,28 +20,20 @@ export function Dashboard() {
   return (
     <div className="page dashboard">
       <h2>Dashboard</h2>
-      <div className="stats-grid">
-        <SummaryCard label="Total Assets" value={summary.total_assets} />
-        <SummaryCard
-          label="Available"
-          value={summary.by_status['available'] ?? 0}
-        />
-        <SummaryCard
-          label="Allocated"
-          value={summary.by_status['allocated'] ?? 0}
-        />
-        <SummaryCard
-          label="In Maintenance"
-          value={summary.by_status['maintenance'] ?? 0}
-        />
-        <SummaryCard
-          label="Utilization"
-          value={`${summary.utilization_pct}%`}
-        />
-        <SummaryCard
-          label="Manufacturers"
-          value={Object.keys(summary.by_manufacturer).length}
-        />
+      <StatusKpiCards summary={summary} />
+      <div className="dashboard-grid">
+        <div className="dashboard-widget dashboard-grid-wide">
+          <BookingsQueue />
+        </div>
+        <div className="dashboard-widget">
+          <MaintenanceAlerts maxAlerts={5} />
+        </div>
+        <div className="dashboard-widget">
+          <RevenueSummary />
+        </div>
+        <div className="dashboard-widget dashboard-grid-wide">
+          <OperatorBreakdown />
+        </div>
       </div>
     </div>
   );

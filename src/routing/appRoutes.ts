@@ -15,4 +15,5 @@ export const appRoutes: AppRoute[] = [
   { path: 'scan', label: 'Scan', icon: 'camera', nav: ['side', 'top', 'mobile'] },
   { path: 'allocation', label: 'Allocation', icon: 'layers', nav: ['side', 'top', 'mobile'] },
   { path: 'incidents', label: 'Incidents', icon: 'alert-triangle', nav: ['side', 'mobile'] },
+  { path: 'operator/dashboard', label: 'Operator Dashboard', icon: 'grid', nav: [] },
 ];

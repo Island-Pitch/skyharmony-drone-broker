@@ -1,19 +1,42 @@
+/* ============================================================
+   SkyHarmony Drone Broker — Maori-Inspired Futuristic Theme
+   ============================================================ */
+
 :root {
-  --color-bg: #0f0f1a;
-  --color-surface: #1a1a2e;
-  --color-surface-hover: #22223a;
-  --color-border: #2a2a4a;
-  --color-text: #e0e0e0;
-  --color-text-muted: #8888aa;
-  --color-primary: #4a6cf7;
-  --color-primary-hover: #3a5ce7;
-  --color-accent: #e94560;
-  --color-success: #2ecc71;
-  --color-warning: #f39c12;
-  --color-danger: #e74c3c;
-  --sidebar-width: 240px;
-  --radius: 8px;
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Maori-inspired palette */
+  --color-moana: #0A3D62;        /* deep teal/ocean */
+  --color-whenua: #C0392B;       /* rich earth red/ochre */
+  --color-ngahere: #1B4332;      /* forest green */
+  --color-te-ra: #D4A843;        /* warm gold/amber */
+  --color-te-po: #0D0D0D;       /* deep charcoal/black */
+  --color-bone: #F0EDE5;         /* cream/bone white */
+
+  /* Semantic mapping */
+  --color-bg: #0B0E14;
+  --color-surface: rgba(10, 61, 98, 0.25);
+  --color-surface-hover: rgba(10, 61, 98, 0.4);
+  --color-border: rgba(212, 168, 67, 0.15);
+  --color-text: var(--color-bone);
+  --color-text-muted: #8CA0B3;
+  --color-primary: var(--color-te-ra);
+  --color-primary-hover: #E0B85A;
+  --color-accent: var(--color-whenua);
+  --color-success: #2ECC71;
+  --color-warning: #F39C12;
+  --color-danger: #E74C3C;
+  --sidebar-width: 250px;
+  --radius: 10px;
+  --font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(10, 61, 98, 0.18);
+  --glass-border: rgba(212, 168, 67, 0.12);
+  --glass-blur: 16px;
+
+  /* Glow effects */
+  --glow-gold: 0 0 20px rgba(212, 168, 67, 0.08);
+  --glow-gold-hover: 0 0 30px rgba(212, 168, 67, 0.15);
+  --glow-teal: 0 0 20px rgba(10, 61, 98, 0.2);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,32 +48,83 @@ body {
   line-height: 1.6;
 }
 
+/* Animated gradient background for main area */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Koru decorative SVG as data URI */
+/* Used as background accent in sidebar and section dividers */
+
+/* ============================================================
+   App Layout
+   ============================================================ */
+
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
 
+/* ============================================================
+   Sidebar — Wharenui-inspired
+   ============================================================ */
+
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background:
+    linear-gradient(180deg,
+      rgba(13, 13, 13, 0.97) 0%,
+      rgba(10, 61, 98, 0.35) 50%,
+      rgba(27, 67, 50, 0.3) 100%
+    );
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  z-index: 100;
+}
+
+/* Kowhaiwhai decorative bar at top of sidebar */
+.sidebar::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-te-ra) 0%,
+    var(--color-whenua) 30%,
+    var(--color-te-ra) 50%,
+    var(--color-moana) 70%,
+    var(--color-te-ra) 100%
+  );
+  background-size: 200% 100%;
+  animation: gradientShift 6s ease infinite;
 }
 
 .sidebar-header {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
+  position: relative;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .sidebar-header h1 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-te-ra);
+  letter-spacing: 0.02em;
 }
 
 .sidebar-header .subtitle {
@@ -60,11 +134,31 @@ body {
   letter-spacing: 0.1em;
 }
 
+.sidebar-header .tagline {
+  font-size: 0.65rem;
+  color: rgba(212, 168, 67, 0.5);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+/* Kowhaiwhai pattern divider under header */
+.sidebar-kowhaiwhai {
+  height: 24px;
+  width: 100%;
+  opacity: 0.25;
+  background-repeat: repeat-x;
+  background-size: 48px 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24'%3E%3Cpath d='M0 12 C6 4, 12 4, 18 12 S30 20, 36 12 S42 4, 48 12' fill='none' stroke='%23D4A843' stroke-width='1.5'/%3E%3Cpath d='M0 12 C6 20, 12 20, 18 12 S30 4, 36 12 S42 20, 48 12' fill='none' stroke='%23C0392B' stroke-width='1'/%3E%3C/svg%3E");
+}
+
 .sidebar-nav {
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .nav-item {
@@ -76,25 +170,56 @@ body {
   color: var(--color-text-muted);
   text-decoration: none;
   font-size: 0.875rem;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.25s ease;
+  position: relative;
 }
 
-.nav-item:hover { background: var(--color-surface-hover); color: var(--color-text); }
-.nav-item.active { background: var(--color-primary); color: #fff; }
+.nav-item:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  transform: translateX(2px);
+}
 
-.nav-icon { font-size: 0.75rem; width: 1.5rem; text-align: center; }
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.2), rgba(10, 61, 98, 0.3));
+  color: var(--color-te-ra);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  box-shadow: var(--glow-gold);
+}
+
+.nav-icon { width: 1.25rem; height: 1.25rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.7; }
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-icon svg { width: 18px; height: 18px; }
+
+/* ============================================================
+   Main Content
+   ============================================================ */
 
 .main-content {
   margin-left: var(--sidebar-width);
   flex: 1;
   padding: 2rem;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(10, 61, 98, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(27, 67, 50, 0.1) 0%, transparent 60%),
+    var(--color-bg);
+  min-height: 100vh;
 }
+
+/* ============================================================
+   Page Headers
+   ============================================================ */
 
 .page h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
+  color: var(--color-bone);
 }
+
+/* ============================================================
+   Stats / KPI Cards — Glassmorphism
+   ============================================================ */
 
 .stats-grid {
   display: grid;
@@ -103,18 +228,28 @@ body {
 }
 
 .stat-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+  box-shadow: var(--glow-gold);
+}
+
+.stat-card:hover {
+  border-color: rgba(212, 168, 67, 0.25);
+  box-shadow: var(--glow-gold-hover);
+  transform: translateY(-2px);
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-te-ra);
 }
 
 .stat-label {
@@ -123,28 +258,44 @@ body {
   margin-top: 0.25rem;
 }
 
+/* ============================================================
+   Data Table
+   ============================================================ */
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius);
   overflow: hidden;
+  border: 1px solid var(--glass-border);
 }
 
 .data-table th,
 .data-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.06);
 }
 
 .data-table th {
-  background: var(--color-surface-hover);
+  background: rgba(10, 61, 98, 0.3);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-text-muted);
+  color: var(--color-te-ra);
+  font-weight: 600;
 }
+
+.data-table tr:hover td {
+  background: rgba(10, 61, 98, 0.12);
+}
+
+/* ============================================================
+   Status Badges — Maori Palette
+   ============================================================ */
 
 .status-badge {
   padding: 0.25rem 0.5rem;
@@ -155,16 +306,36 @@ body {
 }
 
 .status-badge.active { background: rgba(46,204,113,0.15); color: var(--color-success); }
-.status-badge.idle { background: rgba(243,156,18,0.15); color: var(--color-warning); }
-.status-badge.maintenance { background: rgba(231,76,60,0.15); color: var(--color-danger); }
+.status-badge.idle { background: rgba(212,168,67,0.15); color: var(--color-te-ra); }
+.status-badge.maintenance { background: rgba(192,57,43,0.15); color: var(--color-whenua); }
+
+/* Booking status badges */
+.status-badge.pending { background: rgba(212,168,67,0.15); color: var(--color-te-ra); }
+.status-badge.allocated { background: rgba(10,61,98,0.3); color: #5BA3D9; }
+.status-badge.confirmed { background: rgba(46,204,113,0.15); color: var(--color-success); }
+.status-badge.completed { background: rgba(46,204,113,0.25); color: var(--color-success); }
+.status-badge.cancelled { background: rgba(192,57,43,0.15); color: var(--color-whenua); }
+
+/* ============================================================
+   Missions
+   ============================================================ */
 
 .mission-list { display: flex; flex-direction: column; gap: 1rem; }
 
 .mission-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--glow-gold);
+}
+
+.mission-card:hover {
+  border-color: rgba(212, 168, 67, 0.2);
+  box-shadow: var(--glow-gold-hover);
 }
 
 .mission-header {
@@ -176,8 +347,8 @@ body {
 .mission-type {
   font-size: 0.75rem;
   padding: 0.125rem 0.5rem;
-  background: rgba(74,108,247,0.15);
-  color: var(--color-primary);
+  background: rgba(212,168,67,0.15);
+  color: var(--color-te-ra);
   border-radius: 999px;
 }
 
@@ -191,17 +362,21 @@ body {
 
 .progress-bar {
   height: 6px;
-  background: var(--color-border);
+  background: rgba(212, 168, 67, 0.1);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--color-primary);
+  background: linear-gradient(90deg, var(--color-moana), var(--color-te-ra));
   border-radius: 3px;
   transition: width 0.3s;
 }
+
+/* ============================================================
+   Marketplace / Listings
+   ============================================================ */
 
 .listing-grid {
   display: grid;
@@ -210,28 +385,52 @@ body {
 }
 
 .listing-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 1.25rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--glow-gold);
+}
+
+.listing-card:hover {
+  border-color: rgba(212, 168, 67, 0.25);
+  box-shadow: var(--glow-gold-hover);
+  transform: translateY(-2px);
 }
 
 .listing-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
 .listing-operator { font-size: 0.875rem; color: var(--color-text-muted); }
-.listing-price { font-size: 1.25rem; font-weight: 700; color: var(--color-success); margin: 0.5rem 0; }
+.listing-price { font-size: 1.25rem; font-weight: 700; color: var(--color-te-ra); margin: 0.5rem 0; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
 
 .btn-primary {
-  background: var(--color-primary);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-te-ra), #B8922F);
+  color: var(--color-te-po);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: var(--radius);
   font-size: 0.875rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(212, 168, 67, 0.2);
 }
 
-.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-te-ra));
+  box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   Placeholder Page
+   ============================================================ */
 
 .placeholder-page {
   display: flex;
@@ -243,17 +442,15 @@ body {
 }
 
 .placeholder-page code {
-  background: var(--color-surface);
+  background: var(--glass-bg);
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
+  border: 1px solid var(--glass-border);
 }
 
-/* Booking status badges */
-.status-badge.pending { background: rgba(243,156,18,0.15); color: var(--color-warning); }
-.status-badge.allocated { background: rgba(74,108,247,0.15); color: var(--color-primary); }
-.status-badge.confirmed { background: rgba(46,204,113,0.15); color: var(--color-success); }
-.status-badge.completed { background: rgba(46,204,113,0.25); color: var(--color-success); }
-.status-badge.cancelled { background: rgba(231,76,60,0.15); color: var(--color-danger); }
+/* ============================================================
+   Field Errors
+   ============================================================ */
 
 .field-error {
   color: var(--color-danger);
@@ -262,7 +459,9 @@ body {
   display: block;
 }
 
-/* === SHD-2: Admin Dashboard Grid Layout === */
+/* ============================================================
+   SHD-2: Admin Dashboard Grid Layout
+   ============================================================ */
 
 .kpi-grid {
   display: grid;
@@ -287,14 +486,14 @@ body {
 .kpi-success .kpi-indicator { background: var(--color-success); }
 .kpi-success .stat-value { color: var(--color-success); }
 
-.kpi-primary .kpi-indicator { background: var(--color-primary); }
-.kpi-primary .stat-value { color: var(--color-primary); }
+.kpi-primary .kpi-indicator { background: var(--color-te-ra); }
+.kpi-primary .stat-value { color: var(--color-te-ra); }
 
 .kpi-warning .kpi-indicator { background: var(--color-warning); }
 .kpi-warning .stat-value { color: var(--color-warning); }
 
-.kpi-danger .kpi-indicator { background: var(--color-danger); }
-.kpi-danger .stat-value { color: var(--color-danger); }
+.kpi-danger .kpi-indicator { background: var(--color-whenua); }
+.kpi-danger .stat-value { color: var(--color-whenua); }
 
 .kpi-muted .kpi-indicator { background: var(--color-text-muted); }
 .kpi-muted .stat-value { color: var(--color-text-muted); }
@@ -310,16 +509,25 @@ body {
 .dashboard-grid-narrow { grid-column: span 1; }
 
 .dashboard-widget {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 1.5rem;
+  box-shadow: var(--glow-gold);
+  transition: all 0.3s ease;
+}
+
+.dashboard-widget:hover {
+  border-color: rgba(212, 168, 67, 0.2);
 }
 
 .dashboard-widget h3 {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: var(--color-bone);
 }
 
 .empty-state {
@@ -328,7 +536,10 @@ body {
   padding: 1rem 0;
 }
 
-/* Maintenance alert cards */
+/* ============================================================
+   Maintenance Alerts
+   ============================================================ */
+
 .alert-list {
   display: flex;
   flex-direction: column;
@@ -339,16 +550,19 @@ body {
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   border-left: 4px solid transparent;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .alert-warning {
-  background: rgba(243,156,18,0.08);
-  border-left-color: var(--color-warning);
+  background: rgba(212,168,67,0.06);
+  border-left-color: var(--color-te-ra);
 }
 
 .alert-critical {
-  background: rgba(231,76,60,0.08);
-  border-left-color: var(--color-danger);
+  background: rgba(192,57,43,0.06);
+  border-left-color: var(--color-whenua);
 }
 
 .alert-header {
@@ -366,15 +580,18 @@ body {
   text-transform: uppercase;
 }
 
-.severity-warning { background: rgba(243,156,18,0.2); color: var(--color-warning); }
-.severity-critical { background: rgba(231,76,60,0.2); color: var(--color-danger); }
+.severity-warning { background: rgba(212,168,67,0.2); color: var(--color-te-ra); }
+.severity-critical { background: rgba(192,57,43,0.2); color: var(--color-whenua); }
 
 .alert-serial { font-weight: 600; font-size: 0.875rem; }
 .alert-message { font-size: 0.8rem; color: var(--color-text-muted); }
 .alert-meta { font-size: 0.75rem; color: var(--color-text-muted); }
 .alert-overflow { font-size: 0.8rem; color: var(--color-text-muted); font-style: italic; margin-top: 0.5rem; }
 
-/* Revenue grid */
+/* ============================================================
+   Revenue Grid
+   ============================================================ */
+
 .revenue-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -383,7 +600,10 @@ body {
 
 .revenue-total { color: var(--color-success) !important; }
 
-/* Operator breakdown */
+/* ============================================================
+   Operator Breakdown
+   ============================================================ */
+
 .operator-list {
   display: flex;
   flex-direction: column;
@@ -407,25 +627,218 @@ body {
 
 .operator-bar-container {
   height: 8px;
-  background: var(--color-border);
+  background: rgba(212, 168, 67, 0.08);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .operator-bar {
   height: 100%;
-  background: var(--color-primary);
+  background: linear-gradient(90deg, var(--color-moana), var(--color-te-ra));
   border-radius: 4px;
   transition: width 0.3s;
 }
 
-/* Responsive breakpoints */
+/* ============================================================
+   Coming Soon Page
+   ============================================================ */
+
+.coming-soon-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.coming-soon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 3rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--glow-gold);
+}
+
+.coming-soon-icon {
+  font-size: 3rem;
+  color: var(--color-te-ra);
+  opacity: 0.7;
+}
+
+.coming-soon-label {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-bone);
+}
+
+.coming-soon-description {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Landing Page
+   ============================================================ */
+
+.landing-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(10, 61, 98, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(27, 67, 50, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(212, 168, 67, 0.05) 0%, transparent 70%),
+    linear-gradient(180deg, #0B0E14 0%, #0D1520 50%, #0B1218 100%);
+  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%;
+  animation: gradientShift 12s ease infinite;
+  overflow-x: hidden;
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+}
+
+.landing-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.landing-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--color-bone);
+  letter-spacing: -0.02em;
+}
+
+.landing-hero .hero-tagline {
+  font-size: 1.25rem;
+  color: var(--color-te-ra);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.landing-hero .hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  max-width: 500px;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.landing-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-te-ra), #B8922F);
+  color: var(--color-te-po);
+  text-decoration: none;
+  padding: 0.875rem 2rem;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(212, 168, 67, 0.25);
+}
+
+.landing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(212, 168, 67, 0.35);
+}
+
+/* Koru divider between sections */
+.landing-divider {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+  opacity: 0.3;
+}
+
+.landing-features {
+  padding: 4rem 2rem 6rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.landing-features h2 {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-bone);
+  margin-bottom: 3rem;
+}
+
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.landing-feature-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: var(--glow-gold);
+}
+
+.landing-feature-card:hover {
+  border-color: rgba(212, 168, 67, 0.25);
+  box-shadow: var(--glow-gold-hover);
+  transform: translateY(-4px);
+}
+
+.landing-feature-icon {
+  margin-bottom: 1rem;
+  color: var(--color-te-ra);
+}
+
+.landing-feature-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--color-bone);
+}
+
+.landing-feature-card p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Responsive Breakpoints
+   ============================================================ */
+
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
   .dashboard-grid-narrow { grid-column: span 1; }
+
+  .landing-hero h1 { font-size: 2.5rem; }
 }
 
 @media (max-width: 768px) {
@@ -437,6 +850,9 @@ body {
   .main-content { margin-left: 0; padding: 1rem; }
 
   .stat-value { font-size: 1.5rem; }
+
+  .landing-hero h1 { font-size: 2rem; }
+  .landing-features-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {

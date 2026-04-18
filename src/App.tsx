@@ -1,8 +1,9 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
 import { appRoutes } from './routing/appRoutes';
 import { routeComponents } from './routing/routeComponents';
 import { PlaceholderPage } from './components/PlaceholderPage';
+import { LandingPage } from './features/landing/LandingPage';
 import { AuthProvider } from './auth/AuthContext';
 import { DataProvider } from './providers/DataProvider';
 
@@ -11,7 +12,7 @@ export function App() {
     <AuthProvider>
       <DataProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<LandingPage />} />
           <Route element={<AppLayout routes={appRoutes} />}>
             {appRoutes.map((route) => {
               const Component = routeComponents[route.path] ?? PlaceholderPage;
