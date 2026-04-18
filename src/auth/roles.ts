@@ -5,6 +5,7 @@ export enum Role {
   OperatorStaff = 'OperatorStaff',
   LogisticsStaff = 'LogisticsStaff',
   SystemAI = 'SystemAI',
+  Sponsor = 'sponsor',
 }
 
 /** Granular permissions checked by RouteGuard and service layer. */
@@ -68,6 +69,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.AssetRead,
     Permission.AssetUpdate,
     Permission.AuditRead,
+    Permission.FleetSummary,
+  ],
+
+  [Role.Sponsor]: [
+    Permission.BookingRead,
     Permission.FleetSummary,
   ],
 };

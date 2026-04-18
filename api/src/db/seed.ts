@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements, allocationRules, analyticsConfig } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -648,6 +648,30 @@ async function seed() {
 
   await db.insert(settlements).values(settlementRows).onConflictDoNothing();
   console.log(`  Inserted ${settlementRows.length} settlements`);
+
+  // 11. Allocation rules — 5 default rules (one per operator, equal weights)
+  const allocationRuleRows = [
+    { id: '00000000-0000-4000-8000-d00000000001', rule_name: 'NightBrite Drones Priority', operator_weight: '1.0', max_allocation_pct: '100', enabled: true },
+    { id: '00000000-0000-4000-8000-d00000000002', rule_name: 'Orion Skies Priority', operator_weight: '1.0', max_allocation_pct: '100', enabled: true },
+    { id: '00000000-0000-4000-8000-d00000000003', rule_name: 'Vegas Drone Works Priority', operator_weight: '1.0', max_allocation_pct: '100', enabled: true },
+    { id: '00000000-0000-4000-8000-d00000000004', rule_name: 'Patriotic Air Priority', operator_weight: '1.0', max_allocation_pct: '100', enabled: true },
+    { id: '00000000-0000-4000-8000-d00000000005', rule_name: 'Sky Harmony Fleet Priority', operator_weight: '1.0', max_allocation_pct: '100', enabled: true },
+  ];
+
+  for (const r of allocationRuleRows) {
+    await db.insert(allocationRules).values(r).onConflictDoNothing();
+  }
+  console.log('  Inserted 5 allocation rules');
+
+  // 12. Analytics config — default sigma threshold
+  const configRows = [
+    { key: 'sigma_threshold', value: '2' },
+    { key: 'detection_enabled', value: 'true' },
+  ];
+  for (const c of configRows) {
+    await db.insert(analyticsConfig).values(c).onConflictDoNothing();
+  }
+  console.log('  Inserted analytics config defaults');
 
   console.log('Seed complete!');
   await pool.end();

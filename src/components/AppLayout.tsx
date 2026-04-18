@@ -67,7 +67,7 @@ export function AppLayout({ routes }: AppLayoutProps) {
               <div className="sidebar-user-info">
                 <span className="sidebar-user-name">{user.name}</span>
                 <span className="sidebar-user-role">{
-                  { CentralRepoAdmin: 'Admin', OperatorAdmin: 'Fleet Owner', OperatorStaff: 'Operator', LogisticsStaff: 'Logistics', SystemAI: 'System' }[role] ?? role
+                  { CentralRepoAdmin: 'Admin', OperatorAdmin: 'Fleet Owner', OperatorStaff: 'Operator', LogisticsStaff: 'Logistics', SystemAI: 'System', sponsor: 'Sponsor' }[role] ?? role
                 }</span>
               </div>
             </div>

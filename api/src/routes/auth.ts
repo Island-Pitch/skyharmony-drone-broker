@@ -81,7 +81,7 @@ router.post('/auth/login', validate(LoginSchema), async (req, res) => {
 });
 
 const OnboardSchema = z.object({
-  role: z.enum(['CentralRepoAdmin', 'OperatorAdmin', 'OperatorStaff', 'LogisticsStaff']),
+  role: z.enum(['CentralRepoAdmin', 'OperatorAdmin', 'OperatorStaff', 'LogisticsStaff', 'sponsor']),
   organization: z.string().min(1),
   region: z.string().min(1),
   fleet_size: z.number().int().nonnegative().optional(),

@@ -9,6 +9,7 @@ import {
   jsonb,
   boolean,
   date,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -249,4 +250,83 @@ export const telemetrySyncs = pgTable('telemetry_syncs', {
   fault_codes: jsonb('fault_codes').default([]),
   synced_at: timestamp('synced_at').defaultNow(),
   raw_payload: jsonb('raw_payload').default({}),
+});
+
+/* ------------------------------------------------------------------ */
+/*  allocation_rules  (SHD-6)                                          */
+/* ------------------------------------------------------------------ */
+export const allocationRules = pgTable('allocation_rules', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  rule_name: varchar('rule_name', { length: 255 }).notNull(),
+  operator_weight: numeric('operator_weight', { precision: 5, scale: 2 }).notNull().default('1.0'),
+  max_allocation_pct: numeric('max_allocation_pct', { precision: 5, scale: 2 }).notNull().default('100'),
+  enabled: boolean('enabled').notNull().default(true),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  asset_baselines  (SHD-11)                                          */
+/* ------------------------------------------------------------------ */
+export const assetBaselines = pgTable('asset_baselines', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  asset_id: uuid('asset_id').references(() => assets.id).notNull().unique(),
+  avg_flight_hours_per_show: numeric('avg_flight_hours_per_show', { precision: 10, scale: 4 }).notNull().default('0'),
+  stddev_flight_hours: numeric('stddev_flight_hours', { precision: 10, scale: 4 }).notNull().default('0'),
+  avg_battery_drain_per_show: numeric('avg_battery_drain_per_show', { precision: 10, scale: 4 }).notNull().default('0'),
+  stddev_battery_drain: numeric('stddev_battery_drain', { precision: 10, scale: 4 }).notNull().default('0'),
+  sample_count: integer('sample_count').notNull().default(0),
+  last_computed: timestamp('last_computed').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  anomalies  (SHD-11)                                                */
+/* ------------------------------------------------------------------ */
+export const anomalies = pgTable('anomalies', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  asset_id: uuid('asset_id').references(() => assets.id),
+  anomaly_type: varchar('anomaly_type', { length: 50 }).notNull(),
+  field: varchar('field', { length: 100 }).notNull(),
+  expected_value: varchar('expected_value', { length: 100 }),
+  actual_value: varchar('actual_value', { length: 100 }),
+  sigma_distance: varchar('sigma_distance', { length: 50 }),
+  severity: varchar('severity', { length: 20 }).notNull().default('warning'),
+  status: varchar('status', { length: 30 }).notNull().default('new'),
+  reviewed_by: uuid('reviewed_by').references(() => users.id),
+  reviewed_at: timestamp('reviewed_at'),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  analytics_config  (SHD-11)                                         */
+/* ------------------------------------------------------------------ */
+export const analyticsConfig = pgTable('analytics_config', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar('key', { length: 100 }).unique().notNull(),
+  value: varchar('value', { length: 255 }).notNull(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  sponsors  (SHD-19)                                                 */
+/* ------------------------------------------------------------------ */
+export const sponsors = pgTable('sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar('name', { length: 255 }).notNull(),
+  logo_url: text('logo_url'),
+  campaign_tag: varchar('campaign_tag', { length: 100 }),
+  contact_email: varchar('contact_email', { length: 255 }),
+  user_id: uuid('user_id').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  booking_sponsors  (SHD-19)                                         */
+/* ------------------------------------------------------------------ */
+export const bookingSponsors = pgTable('booking_sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  booking_id: uuid('booking_id').references(() => bookings.id).notNull(),
+  sponsor_id: uuid('sponsor_id').references(() => sponsors.id).notNull(),
+  campaign_name: varchar('campaign_name', { length: 255 }),
+  notes: text('notes'),
+  created_at: timestamp('created_at').defaultNow(),
 });

@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
-import { assets, bookings } from '../db/schema.js';
-import { eq, and, count } from 'drizzle-orm';
+import { assets, bookings, allocationRules } from '../db/schema.js';
+import { eq, and, count, sql } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
@@ -11,6 +11,71 @@ const router = Router();
 const CheckSchema = z.object({
   booking_id: z.string().uuid(),
 });
+
+/**
+ * Scan +/- windowDays from a target date and return the top N dates
+ * with the highest drone availability.
+ */
+async function findAlternativeDates(
+  targetDate: Date,
+  droneCount: number,
+  windowDays = 14,
+  topN = 3,
+): Promise<{ date: string; available_count: number; shortfall: number }[]> {
+  const droneTypeId = '00000000-0000-4000-8000-000000000001';
+
+  // Get total available drones (simplified: not date-aware for demo)
+  const [availableRow] = await db
+    .select({ count: count() })
+    .from(assets)
+    .where(
+      and(
+        eq(assets.asset_type_id, droneTypeId),
+        eq(assets.status, 'available'),
+      ),
+    );
+  const totalAvailable = Number(availableRow?.count ?? 0);
+
+  const candidates: { date: string; available_count: number; shortfall: number }[] = [];
+
+  for (let offset = -windowDays; offset <= windowDays; offset++) {
+    if (offset === 0) continue; // skip the requested date
+
+    const candidate = new Date(targetDate);
+    candidate.setDate(candidate.getDate() + offset);
+    const dateStr = candidate.toISOString().split('T')[0]!;
+
+    // Count bookings overlapping this candidate date
+    const overlapping = await db
+      .select({ total_drones: sql<number>`COALESCE(SUM(${bookings.drone_count}), 0)` })
+      .from(bookings)
+      .where(
+        sql`${bookings.show_date}::date = ${dateStr}::date AND ${bookings.status} NOT IN ('cancelled', 'completed')`,
+      );
+
+    const usedDrones = Number(overlapping[0]?.total_drones ?? 0);
+    const availableForDate = Math.max(0, totalAvailable - usedDrones);
+    const shortfall = Math.max(0, droneCount - availableForDate);
+
+    candidates.push({
+      date: candidate.toISOString(),
+      available_count: availableForDate,
+      shortfall,
+    });
+  }
+
+  // Sort by availability descending, then by proximity to target date
+  candidates.sort((a, b) => {
+    if (b.available_count !== a.available_count) {
+      return b.available_count - a.available_count;
+    }
+    const aDist = Math.abs(new Date(a.date).getTime() - targetDate.getTime());
+    const bDist = Math.abs(new Date(b.date).getTime() - targetDate.getTime());
+    return aDist - bDist;
+  });
+
+  return candidates.slice(0, topN);
+}
 
 // POST /api/allocation/check
 router.post('/allocation/check', auth, requireRole('CentralRepoAdmin'), validate(CheckSchema), async (req, res) => {
@@ -46,6 +111,12 @@ router.post('/allocation/check', auth, requireRole('CentralRepoAdmin'), validate
       ? [{ reason: 'insufficient_drones', available, needed }]
       : [];
 
+    // SHD-6: Scan +/- 14 days for alternative dates with highest availability
+    const alternatives = await findAlternativeDates(
+      new Date(booking.show_date),
+      needed,
+    );
+
     res.json({
       data: {
         booking_id,
@@ -53,10 +124,22 @@ router.post('/allocation/check', auth, requireRole('CentralRepoAdmin'), validate
         needed,
         can_allocate: available >= needed,
         conflicts,
+        alternatives,
       },
     });
   } catch (err) {
     console.error('Allocation check error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/allocation/rules — list allocation rules
+router.get('/allocation/rules', auth, async (_req, res) => {
+  try {
+    const rules = await db.select().from(allocationRules);
+    res.json({ data: rules });
+  } catch (err) {
+    console.error('Allocation rules list error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
