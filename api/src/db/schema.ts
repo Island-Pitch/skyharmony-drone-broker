@@ -235,7 +235,6 @@ export const settlements = pgTable('settlements', {
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });
-<<<<<<< HEAD
 
 /* ------------------------------------------------------------------ */
 /*  telemetry_syncs                                                    */
@@ -251,5 +250,3 @@ export const telemetrySyncs = pgTable('telemetry_syncs', {
   synced_at: timestamp('synced_at').defaultNow(),
   raw_payload: jsonb('raw_payload').default({}),
 });
-=======
->>>>>>> epic/SHD-8-settlement

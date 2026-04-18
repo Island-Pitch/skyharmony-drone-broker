@@ -199,15 +199,9 @@ async function seed() {
   // 6b. Trailers
   const trailerRows: (typeof assets.$inferInsert)[] = [];
   const vehicleTypes = ['enclosed', 'flatbed', 'refrigerated'];
-<<<<<<< HEAD
   const states = ['CA', 'NV', 'AZ'];
   for (let i = 1; i <= 15; i++) {
     const state = states[i % states.length]!;
-=======
-  const stateAbbrevs = ['CA', 'NV', 'AZ'];
-  for (let i = 1; i <= 15; i++) {
-    const state = stateAbbrevs[i % stateAbbrevs.length]!;
->>>>>>> epic/SHD-8-settlement
     trailerRows.push({
       id: crypto.randomUUID(),
       asset_type_id: typeRows[4]!.id,
@@ -215,15 +209,11 @@ async function seed() {
       manufacturer: 'TrailKing',
       model: 'DroneHauler Pro',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         capacity_drones: 100,
         vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length],
         license_plate: `${state}-${String(1000 + i)}`,
       },
-=======
-      typed_attributes: { capacity_drones: 100, vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length], license_plate: `${state}-${String(1000 + i)}` },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -242,15 +232,11 @@ async function seed() {
       manufacturer: 'Ubiquiti',
       model: 'AirMax Sector',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         frequency_ghz: frequencies[(i - 1) % frequencies.length],
         range_km: 5 + Math.floor(rand() * 10),
         channels: 16,
       },
-=======
-      typed_attributes: { frequency_ghz: frequencies[(i - 1) % frequencies.length], range_km: 5 + Math.floor(rand() * 10), channels: 16 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -269,15 +255,11 @@ async function seed() {
       manufacturer: 'Verge Aero',
       model: 'Command Center',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         software_version: swVersions[(i - 1) % swVersions.length],
         max_drones: 500,
         display_count: 4,
       },
-=======
-      typed_attributes: { software_version: swVersions[(i - 1) % swVersions.length], max_drones: 500, display_count: 4 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });
@@ -296,15 +278,11 @@ async function seed() {
       manufacturer: 'Trimble',
       model: 'R12i',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         accuracy_cm: 2,
         constellation: constellations[(i - 1) % constellations.length],
         range_km: 10,
       },
-=======
-      typed_attributes: { accuracy_cm: 2, constellation: constellations[(i - 1) % constellations.length], range_km: 10 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
     });

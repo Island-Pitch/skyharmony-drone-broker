@@ -101,35 +101,6 @@ export function seedStore(): void {
     updated_at: '2024-01-01T00:00:00.000Z',
   };
 
-  const trailerType: AssetType = {
-    id: '00000000-0000-4000-8000-000000000005',
-    name: 'trailer',
-    description: 'Transport trailer for drone logistics',
-    created_at: '2024-01-01T00:00:00.000Z',
-    updated_at: '2024-01-01T00:00:00.000Z',
-  };
-  const antennaArrayType: AssetType = {
-    id: '00000000-0000-4000-8000-000000000006',
-    name: 'antenna_array',
-    description: 'Multi-channel antenna array for extended range',
-    created_at: '2024-01-01T00:00:00.000Z',
-    updated_at: '2024-01-01T00:00:00.000Z',
-  };
-  const groundControlType: AssetType = {
-    id: '00000000-0000-4000-8000-000000000007',
-    name: 'ground_control',
-    description: 'Ground control station with multi-drone management',
-    created_at: '2024-01-01T00:00:00.000Z',
-    updated_at: '2024-01-01T00:00:00.000Z',
-  };
-  const rtkStationType: AssetType = {
-    id: '00000000-0000-4000-8000-000000000008',
-    name: 'rtk_station',
-    description: 'Real-time kinematic positioning station',
-    created_at: '2024-01-01T00:00:00.000Z',
-    updated_at: '2024-01-01T00:00:00.000Z',
-  };
-
   store.assetTypes.set(droneType.id, droneType);
   store.assetTypes.set(batteryType.id, batteryType);
   store.assetTypes.set(chargerType.id, chargerType);
@@ -245,15 +216,11 @@ export function seedStore(): void {
       manufacturer: 'TrailKing',
       model: 'DroneHauler Pro',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         capacity_drones: 100,
         vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length],
         license_plate: `${state}-${String(1000 + i)}`,
       },
-=======
-      typed_attributes: { capacity_drones: 100, vehicle_type: vehicleTypes[(i - 1) % vehicleTypes.length], license_plate: `${state}-${String(1000 + i)}` },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
       created_at: '2024-01-01T00:00:00.000Z',
@@ -272,15 +239,11 @@ export function seedStore(): void {
       manufacturer: 'Ubiquiti',
       model: 'AirMax Sector',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         frequency_ghz: frequencies[(i - 1) % frequencies.length],
         range_km: 5 + Math.floor(rand() * 10),
         channels: 16,
       },
-=======
-      typed_attributes: { frequency_ghz: frequencies[(i - 1) % frequencies.length], range_km: 5 + Math.floor(rand() * 10), channels: 16 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
       created_at: '2024-01-01T00:00:00.000Z',
@@ -299,15 +262,11 @@ export function seedStore(): void {
       manufacturer: 'Verge Aero',
       model: 'Command Center',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         software_version: swVersions[(i - 1) % swVersions.length],
         max_drones: 500,
         display_count: 4,
       },
-=======
-      typed_attributes: { software_version: swVersions[(i - 1) % swVersions.length], max_drones: 500, display_count: 4 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
       created_at: '2024-01-01T00:00:00.000Z',
@@ -326,15 +285,11 @@ export function seedStore(): void {
       manufacturer: 'Trimble',
       model: 'R12i',
       status: 'available',
-<<<<<<< HEAD
       typed_attributes: {
         accuracy_cm: 2,
         constellation: constellations[(i - 1) % constellations.length],
         range_km: 10,
       },
-=======
-      typed_attributes: { accuracy_cm: 2, constellation: constellations[(i - 1) % constellations.length], range_km: 10 },
->>>>>>> epic/SHD-8-settlement
       current_operator_id: null,
       parent_asset_id: null,
       created_at: '2024-01-01T00:00:00.000Z',

@@ -62,7 +62,6 @@ const icons: Record<string, ReactNode> = {
       <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
     </svg>
   ),
-<<<<<<< HEAD
   truck: (
     <svg {...props}>
       <path d="M1 3h15v13H1z" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
@@ -108,16 +107,6 @@ const icons: Record<string, ReactNode> = {
       <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
     </svg>
   ),
-=======
-  truck: (<svg {...props}><path d="M1 3h15v13H1z" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>),
-  antenna: (<svg {...props}><path d="M12 20V10" /><path d="M18 6l-6 4-6-4" /><path d="M21 3l-9 6-9-6" /><path d="M9 20h6" /></svg>),
-  monitor: (<svg {...props}><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>),
-  satellite: (<svg {...props}><path d="M13 7L9 3 3 9l4 4" /><path d="M11 15l4 4 6-6-4-4" /><path d="M8 12l4 4" /><circle cx="6" cy="18" r="3" /></svg>),
-  drone: (<svg {...props}><circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M1 12h4M19 12h4" /><path d="M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" /></svg>),
-  battery: (<svg {...props}><rect x="1" y="6" width="18" height="12" rx="2" /><path d="M23 10v4" /></svg>),
-  zap: (<svg {...props}><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>),
-  radio: (<svg {...props}><path d="M12 12m-2 0a2 2 0 104 0 2 2 0 10-4 0" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></svg>),
->>>>>>> epic/SHD-8-settlement
 };
 
 export function NavIcon({ name }: { name: string }) {
