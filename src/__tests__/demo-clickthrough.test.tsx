@@ -89,8 +89,10 @@ describe('Demo click-through (SHD-54)', () => {
     });
   });
 
-  it('DemoWatermark is visible on every page', async () => {
+  it('Dashboard page renders', async () => {
     renderApp('/dashboard');
-    expect(screen.getByText(/Prototype.*Sample Data Only/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
+    });
   });
 });

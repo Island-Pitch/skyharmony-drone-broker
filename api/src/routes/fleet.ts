@@ -42,12 +42,38 @@ router.get('/fleet/summary', auth, async (_req, res) => {
       .groupBy(assets.status);
 
     const total = rows.reduce((s, r) => s + Number(r.count), 0);
-    const byStatus: Record<string, number> = {};
+    const by_status: Record<string, number> = {};
     for (const r of rows) {
-      byStatus[r.status] = Number(r.count);
+      by_status[r.status] = Number(r.count);
     }
 
-    res.json({ data: { total, byStatus } });
+    // Manufacturer breakdown
+    const mfrRows = await db
+      .select({ manufacturer: assets.manufacturer, count: count() })
+      .from(assets)
+      .groupBy(assets.manufacturer);
+    const by_manufacturer: Record<string, number> = {};
+    for (const r of mfrRows) {
+      by_manufacturer[r.manufacturer] = Number(r.count);
+    }
+
+    // Type breakdown
+    const typeRows = await db
+      .select({ asset_type_id: assets.asset_type_id, count: count() })
+      .from(assets)
+      .groupBy(assets.asset_type_id);
+    const by_type: Record<string, number> = {};
+    for (const r of typeRows) {
+      if (r.asset_type_id) by_type[r.asset_type_id] = Number(r.count);
+    }
+
+    const retired = by_status['retired'] ?? 0;
+    const allocated = by_status['allocated'] ?? 0;
+    const in_transit = by_status['in_transit'] ?? 0;
+    const active = total - retired;
+    const utilization_pct = active > 0 ? Math.round(((allocated + in_transit) / active) * 1000) / 10 : 0;
+
+    res.json({ data: { total_assets: total, by_status, by_type, by_manufacturer, utilization_pct } });
   } catch (err) {
     console.error('Fleet summary error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -98,12 +124,20 @@ router.get('/fleet', auth, async (req, res) => {
       db.select({ count: count() }).from(assets).where(where),
     ]);
 
+    const total = Number(totalRow?.count ?? 0);
+    const currentPage = Math.max(Number(page) || 1, 1);
+    // Normalize flight_hours from string to number
+    const normalized = rows.map((r) => ({
+      ...r,
+      flight_hours: r.flight_hours != null ? Number(r.flight_hours) : undefined,
+    }));
     res.json({
-      data: rows,
+      data: normalized,
       meta: {
-        page: Math.max(Number(page) || 1, 1),
+        page: currentPage,
         per_page: limit,
-        total: Number(totalRow?.count ?? 0),
+        total,
+        total_pages: Math.ceil(total / limit),
       },
     });
   } catch (err) {
