@@ -110,6 +110,34 @@ const icons: Record<string, ReactNode> = {
   'bar-chart': (
     <svg {...props}>
       <line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" />
+  plane: (
+    <svg {...props}>
+      <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z" />
+    </svg>
+  ),
+  helicopter: (
+    <svg {...props}>
+      <path d="M3 3h18" /><path d="M12 3v7" /><path d="M7 10h10l2 4H5l2-4z" /><path d="M12 14v4" /><path d="M8 18h8" /><path d="M18 14l3 4" />
+    </svg>
+  ),
+  pyrodrone: (
+    <svg {...props}>
+      <circle cx="12" cy="15" r="3" /><path d="M12 4v4M8 6l1 3M16 6l-1 3" /><path d="M5 15h2M17 15h2" /><path d="M7 19l1.5-1.5M17 19l-1.5-1.5" />
+    </svg>
+  ),
+  star: (
+    <svg {...props}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  activity: (
+    <svg {...props}>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
+  'credit-card': (
+    <svg {...props}>
+      <rect x="1" y="4" width="22" height="16" rx="2" /><path d="M1 10h22" />
     </svg>
   ),
 };

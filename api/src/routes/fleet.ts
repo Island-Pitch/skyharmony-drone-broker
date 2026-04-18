@@ -91,6 +91,72 @@ router.get('/fleet/summary', auth, async (req, res) => {
   }
 });
 
+// GET /api/fleet/types/:typeId/schema — returns expected typed_attributes fields
+const TYPE_ATTRIBUTE_SCHEMAS: Record<string, { field: string; type: string; description: string }[]> = {
+  fixed_wing: [
+    { field: 'tail_number', type: 'string', description: 'FAA tail number' },
+    { field: 'airframe_hours', type: 'number', description: 'Total airframe hours' },
+    { field: 'engine_hours', type: 'number', description: 'Total engine hours' },
+    { field: 'ifr_certified', type: 'boolean', description: 'IFR certification status' },
+    { field: 'seats', type: 'number', description: 'Number of seats' },
+    { field: 'range_nm', type: 'number', description: 'Range in nautical miles' },
+  ],
+  helicopter: [
+    { field: 'tail_number', type: 'string', description: 'FAA tail number' },
+    { field: 'rotor_hours', type: 'number', description: 'Total rotor hours' },
+    { field: 'turbine_hours', type: 'number', description: 'Total turbine hours' },
+    { field: 'max_payload_kg', type: 'number', description: 'Maximum payload in kg' },
+  ],
+  pyrodrone: [
+    { field: 'pyro_capacity', type: 'number', description: 'Pyrotechnic payload capacity' },
+    { field: 'faa_waiver_number', type: 'string', description: 'FAA pyro waiver number' },
+    { field: 'max_altitude_ft', type: 'number', description: 'Maximum altitude in feet' },
+  ],
+  drone: [
+    { field: 'max_altitude_ft', type: 'number', description: 'Maximum altitude in feet' },
+    { field: 'payload_capacity_kg', type: 'number', description: 'Payload capacity in kg' },
+  ],
+  battery: [{ field: 'capacity_mah', type: 'number', description: 'Battery capacity in mAh' }],
+  charger: [{ field: 'bays', type: 'number', description: 'Number of charging bays' }],
+  base_station: [{ field: 'range_km', type: 'number', description: 'Communication range in km' }],
+  trailer: [
+    { field: 'capacity_drones', type: 'number', description: 'Drone capacity' },
+    { field: 'vehicle_type', type: 'string', description: 'Vehicle type' },
+    { field: 'license_plate', type: 'string', description: 'License plate number' },
+  ],
+  antenna_array: [
+    { field: 'frequency_ghz', type: 'number', description: 'Operating frequency in GHz' },
+    { field: 'range_km', type: 'number', description: 'Range in km' },
+    { field: 'channels', type: 'number', description: 'Number of channels' },
+  ],
+  ground_control: [
+    { field: 'software_version', type: 'string', description: 'Software version' },
+    { field: 'max_drones', type: 'number', description: 'Maximum simultaneous drones' },
+    { field: 'display_count', type: 'number', description: 'Number of displays' },
+  ],
+  rtk_station: [
+    { field: 'accuracy_cm', type: 'number', description: 'Position accuracy in cm' },
+    { field: 'constellation', type: 'string', description: 'GNSS constellation support' },
+    { field: 'range_km', type: 'number', description: 'Range in km' },
+  ],
+};
+
+router.get('/fleet/types/:typeId/schema', auth, async (req, res) => {
+  try {
+    const typeId = req.params.typeId as string;
+    const [assetType] = await db.select().from(assetTypes).where(eq(assetTypes.id, typeId)).limit(1);
+    if (!assetType) {
+      res.status(404).json({ error: 'Asset type not found' });
+      return;
+    }
+    const schema = TYPE_ATTRIBUTE_SCHEMAS[assetType.name] ?? [];
+    res.json({ data: { type_id: typeId, type_name: assetType.name, fields: schema } });
+  } catch (err) {
+    console.error('Fleet type schema error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/fleet/types — returns asset types with count of assets per type
 router.get('/fleet/types', auth, async (_req, res) => {
   try {

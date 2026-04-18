@@ -110,6 +110,31 @@ export function seedStore(): void {
   store.assetTypes.set(groundControlType.id, groundControlType);
   store.assetTypes.set(rtkStationType.id, rtkStationType);
 
+  const fixedWingType: AssetType = {
+    id: '00000000-0000-4000-8000-000000000009',
+    name: 'fixed_wing',
+    description: 'Fixed-wing aircraft for aerial coordination',
+    created_at: '2024-01-01T00:00:00.000Z',
+    updated_at: '2024-01-01T00:00:00.000Z',
+  };
+  const helicopterType: AssetType = {
+    id: '00000000-0000-4000-8000-00000000000a',
+    name: 'helicopter',
+    description: 'Rotary-wing aircraft for aerial operations',
+    created_at: '2024-01-01T00:00:00.000Z',
+    updated_at: '2024-01-01T00:00:00.000Z',
+  };
+  const pyrodroneType: AssetType = {
+    id: '00000000-0000-4000-8000-00000000000b',
+    name: 'pyrodrone',
+    description: 'Pyrotechnic-equipped drone for aerial fireworks',
+    created_at: '2024-01-01T00:00:00.000Z',
+    updated_at: '2024-01-01T00:00:00.000Z',
+  };
+  store.assetTypes.set(fixedWingType.id, fixedWingType);
+  store.assetTypes.set(helicopterType.id, helicopterType);
+  store.assetTypes.set(pyrodroneType.id, pyrodroneType);
+
   // Generate 500 drones distributed across named operators
   let droneIndex = 0;
   for (let opIdx = 0; opIdx < operators.length; opIdx++) {
@@ -296,6 +321,56 @@ export function seedStore(): void {
       updated_at: new Date().toISOString(),
     };
     store.assets.set(rtk.id, rtk);
+  }
+
+  // Add 5 fixed-wing aircraft
+  const fwModels = ['Cessna 172', 'Piper Cherokee', 'Beechcraft Bonanza', 'Cirrus SR22', 'Diamond DA40'];
+  for (let i = 1; i <= 5; i++) {
+    const fw: Asset = {
+      id: crypto.randomUUID(),
+      asset_type_id: fixedWingType.id,
+      serial_number: `FW-${String(i).padStart(3, '0')}`,
+      manufacturer: fwModels[i - 1]!.split(' ')[0]!,
+      model: fwModels[i - 1]!,
+      status: 'available',
+      typed_attributes: { tail_number: `N${1000 + i}SH`, airframe_hours: 500 + Math.floor(rand() * 3000), engine_hours: 300 + Math.floor(rand() * 2000), ifr_certified: i <= 3, seats: i <= 2 ? 4 : 6, range_nm: 400 + Math.floor(rand() * 600) },
+      current_operator_id: null, parent_asset_id: null,
+      created_at: '2024-01-01T00:00:00.000Z', updated_at: new Date().toISOString(),
+    };
+    store.assets.set(fw.id, fw);
+  }
+
+  // Add 3 helicopters
+  const heliModels = ['Bell 206', 'Robinson R44', 'Airbus H125'];
+  for (let i = 1; i <= 3; i++) {
+    const heli: Asset = {
+      id: crypto.randomUUID(),
+      asset_type_id: helicopterType.id,
+      serial_number: `HELI-${String(i).padStart(3, '0')}`,
+      manufacturer: heliModels[i - 1]!.split(' ')[0]!,
+      model: heliModels[i - 1]!,
+      status: 'available',
+      typed_attributes: { tail_number: `N${2000 + i}SH`, rotor_hours: 200 + Math.floor(rand() * 1500), turbine_hours: 150 + Math.floor(rand() * 1200), max_payload_kg: 300 + Math.floor(rand() * 500) },
+      current_operator_id: null, parent_asset_id: null,
+      created_at: '2024-01-01T00:00:00.000Z', updated_at: new Date().toISOString(),
+    };
+    store.assets.set(heli.id, heli);
+  }
+
+  // Add 20 pyrodrones
+  for (let i = 1; i <= 20; i++) {
+    const pyro: Asset = {
+      id: crypto.randomUUID(),
+      asset_type_id: pyrodroneType.id,
+      serial_number: `PYRO-${String(i).padStart(3, '0')}`,
+      manufacturer: 'Verge Aero',
+      model: 'PyroLauncher X1',
+      status: i <= 16 ? 'available' : 'maintenance',
+      typed_attributes: { pyro_capacity: 4 + Math.floor(rand() * 8), faa_waiver_number: `FAA-PY-${String(3000 + i)}`, max_altitude_ft: 200 + Math.floor(rand() * 300) },
+      current_operator_id: null, parent_asset_id: null,
+      created_at: '2024-01-01T00:00:00.000Z', updated_at: new Date().toISOString(),
+    };
+    store.assets.set(pyro.id, pyro);
   }
 
   // Seed 24 sample bookings with realistic CA/AZ/NV locations

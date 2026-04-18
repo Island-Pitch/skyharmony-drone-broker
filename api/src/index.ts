@@ -16,6 +16,7 @@ import telemetryRouter from './routes/telemetry.js';
 import settlementsRouter from './routes/settlements.js';
 import analyticsRouter from './routes/analytics.js';
 import operatorRouter from './routes/operator.js';
+import sponsorsRouter from './routes/sponsors.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -46,6 +47,7 @@ app.use('/api', telemetryRouter);
 app.use('/api', settlementsRouter);
 app.use('/api', analyticsRouter);
 app.use('/api', operatorRouter);
+app.use('/api', sponsorsRouter);
 
 app.listen(PORT, () => {
   console.log(`SkyHarmony API listening on port ${PORT}`);
