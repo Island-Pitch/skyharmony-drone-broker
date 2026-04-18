@@ -226,9 +226,13 @@ export function LandingPage() {
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/terms">Terms of Service</Link>
           <Link to="/accessibility">Accessibility</Link>
+          <Link to="/data-sovereignty">Data Sovereignty</Link>
           <a href="https://skyharmony.us" target="_blank" rel="noopener noreferrer">SkyHarmony.us</a>
         </div>
         <p className="landing-footer-copy">Sky Harmony Drone Shows &middot; Seal Beach, California &middot; Sky Harmony LLC</p>
+        <p className="landing-footer-copy" style={{ marginTop: '0.25rem' }}>
+          Data governance aligned with <a href="https://www.temanararaunga.maori.nz/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-te-ra)', textDecoration: 'none' }}>Te Mana Raraunga</a> &middot; CARE Principles
+        </p>
       </footer>
     </div>
   );
