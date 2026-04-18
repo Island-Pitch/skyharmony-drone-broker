@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signup } from '@/auth/authService';
+import { signup, getMe, type AuthUser } from '@/auth/authService';
 import { apiPost, setAuthToken } from '@/data/repositories/http/apiClient';
 
 interface SignupData {
@@ -71,18 +71,41 @@ export function OnboardingWizard() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  /** Logged-in user who already has an account (e.g. invited team member) — skip signup and only call /auth/onboard. */
+  const [sessionUser, setSessionUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getMe().then((user) => {
+      if (cancelled || !user) return;
+      if (user.onboarded === 'true') {
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+      setSessionUser(user);
+      setData((prev) => ({
+        ...prev,
+        email: user.email,
+        name: user.name ?? prev.name,
+      }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   const showFleetStep = data.role === 'OperatorAdmin';
   const totalSteps = showFleetStep ? 5 : 4;
+  const completingExistingAccount = !!sessionUser;
 
   async function handleCreateAccount(e?: FormEvent) {
     if (e) e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      // 1. Create account
-      await signup(data.email, data.password, data.name);
-      // 2. Complete onboarding
+      if (!completingExistingAccount) {
+        await signup(data.email, data.password, data.name);
+      }
       const res = await apiPost<{ token: string }>('/auth/onboard', {
         role: data.role,
         organization: data.organization,
@@ -166,24 +189,45 @@ export function OnboardingWizard() {
           <div className="onboarding-step">
             <h2>Create Your Account</h2>
             <p className="onboarding-hint">Almost there — set up your login credentials.</p>
-            <form className="onboarding-form" onSubmit={(e) => { e.preventDefault(); showFleetStep ? setStep(4) : handleCreateAccount(); }}>
+            <form
+              className="onboarding-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (showFleetStep) {
+                  setStep(4);
+                } else {
+                  void handleCreateAccount();
+                }
+              }}
+            >
               <label>
                 <span>Full Name</span>
                 <input type="text" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} placeholder="e.g. Jonathan de Armas" required />
               </label>
               <label>
                 <span>Email</span>
-                <input type="email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="you@company.com" required />
+                <input type="email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="you@company.com" required readOnly={completingExistingAccount} />
               </label>
-              <label>
-                <span>Password</span>
-                <input type="password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} placeholder="Minimum 6 characters" required minLength={6} />
-              </label>
+              {!completingExistingAccount && (
+                <label>
+                  <span>Password</span>
+                  <input type="password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} placeholder="Minimum 6 characters" required minLength={6} />
+                </label>
+              )}
               {error && !showFleetStep && <p className="login-error">{error}</p>}
               <div className="onboarding-actions">
                 <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Back</button>
-                <button type="submit" className="btn-primary" disabled={!data.name || !data.email || !data.password || loading}>
-                  {showFleetStep ? 'Continue' : loading ? 'Creating...' : 'Create Account'}
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={
+                    !data.name ||
+                    !data.email ||
+                    (!completingExistingAccount && !data.password) ||
+                    loading
+                  }
+                >
+                  {showFleetStep ? 'Continue' : loading ? 'Creating...' : completingExistingAccount ? 'Continue' : 'Create Account'}
                 </button>
               </div>
             </form>

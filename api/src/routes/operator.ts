@@ -299,12 +299,31 @@ router.delete(
         return;
       }
 
-      const [deleted] = await db
-        .delete(users)
+      if (targetUser.role === 'OperatorAdmin') {
+        res.status(403).json({ error: 'Cannot remove organization administrators' });
+        return;
+      }
+
+      // Soft-remove: retain the user row for foreign keys; revoke access and free the email.
+      const placeholderEmail = `removed_${targetUserId.replace(/-/g, '')}@removed.invalid`;
+      const password_hash = await bcrypt.hash(crypto.randomBytes(32).toString('base64url'), 10);
+
+      const [removed] = await db
+        .update(users)
+        .set({
+          email: placeholderEmail,
+          password_hash,
+          name: 'Removed user',
+          organization: null,
+          region: null,
+          fleet_size: null,
+          onboarded: 'false',
+          updated_at: new Date(),
+        })
         .where(eq(users.id, targetUserId))
         .returning();
 
-      res.json({ data: { id: deleted!.id, deleted: true } });
+      res.json({ data: { id: removed!.id, deleted: true } });
     } catch (err) {
       console.error('Operator team remove error:', err);
       res.status(500).json({ error: 'Internal server error' });

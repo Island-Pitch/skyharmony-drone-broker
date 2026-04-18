@@ -27,6 +27,51 @@ function sigmaDistance(value: number, avg: number, sd: number): number {
   return Math.abs(value - avg) / sd;
 }
 
+async function findPendingSigmaDuplicate(params: {
+  asset_id: string;
+  field: string;
+  expected_value: string;
+  actual_value: string;
+}) {
+  const [row] = await db
+    .select({ id: anomalies.id })
+    .from(anomalies)
+    .where(
+      and(
+        eq(anomalies.asset_id, params.asset_id),
+        eq(anomalies.anomaly_type, 'sigma_deviation'),
+        eq(anomalies.field, params.field),
+        eq(anomalies.status, 'pending'),
+        eq(anomalies.expected_value, params.expected_value),
+        eq(anomalies.actual_value, params.actual_value),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
+async function findPendingOperatorDuplicate(params: {
+  asset_id: string;
+  expected_value: string;
+  actual_value: string;
+}) {
+  const [row] = await db
+    .select({ id: anomalies.id })
+    .from(anomalies)
+    .where(
+      and(
+        eq(anomalies.asset_id, params.asset_id),
+        eq(anomalies.anomaly_type, 'operator_anomaly'),
+        eq(anomalies.field, 'fleet_utilization'),
+        eq(anomalies.status, 'pending'),
+        eq(anomalies.expected_value, params.expected_value),
+        eq(anomalies.actual_value, params.actual_value),
+      ),
+    )
+    .limit(1);
+  return row ?? null;
+}
+
 /* ---------- POST /api/analytics/compute-baselines ---------- */
 
 router.post(
@@ -142,18 +187,28 @@ router.post(
         if (flightDelta > 0 && sdFlight > 0) {
           const sigma = sigmaDistance(flightDelta, avgFlight, sdFlight);
           if (sigma >= 2) {
-            const [anomaly] = await db
-              .insert(anomalies)
-              .values({
-                asset_id: baseline.asset_id,
-                anomaly_type: 'sigma_deviation',
-                field: 'flight_hours_delta',
-                expected_value: String(Math.round(avgFlight * 10000) / 10000),
-                actual_value: String(Math.round(flightDelta * 10000) / 10000),
-                sigma_distance: String(Math.round(sigma * 100) / 100),
-              })
-              .returning();
-            anomaliesCreated.push(anomaly!);
+            const expected_value = String(Math.round(avgFlight * 10000) / 10000);
+            const actual_value = String(Math.round(flightDelta * 10000) / 10000);
+            const dup = await findPendingSigmaDuplicate({
+              asset_id: baseline.asset_id,
+              field: 'flight_hours_delta',
+              expected_value,
+              actual_value,
+            });
+            if (!dup) {
+              const [anomaly] = await db
+                .insert(anomalies)
+                .values({
+                  asset_id: baseline.asset_id,
+                  anomaly_type: 'sigma_deviation',
+                  field: 'flight_hours_delta',
+                  expected_value,
+                  actual_value,
+                  sigma_distance: String(Math.round(sigma * 100) / 100),
+                })
+                .returning();
+              anomaliesCreated.push(anomaly!);
+            }
           }
         }
 
@@ -162,18 +217,28 @@ router.post(
         if (batteryDelta > 0 && sdBattery > 0) {
           const sigma = sigmaDistance(batteryDelta, avgBattery, sdBattery);
           if (sigma >= 2) {
-            const [anomaly] = await db
-              .insert(anomalies)
-              .values({
-                asset_id: baseline.asset_id,
-                anomaly_type: 'sigma_deviation',
-                field: 'battery_cycles_delta',
-                expected_value: String(Math.round(avgBattery * 10000) / 10000),
-                actual_value: String(Math.round(batteryDelta * 10000) / 10000),
-                sigma_distance: String(Math.round(sigma * 100) / 100),
-              })
-              .returning();
-            anomaliesCreated.push(anomaly!);
+            const expected_value = String(Math.round(avgBattery * 10000) / 10000);
+            const actual_value = String(Math.round(batteryDelta * 10000) / 10000);
+            const dup = await findPendingSigmaDuplicate({
+              asset_id: baseline.asset_id,
+              field: 'battery_cycles_delta',
+              expected_value,
+              actual_value,
+            });
+            if (!dup) {
+              const [anomaly] = await db
+                .insert(anomalies)
+                .values({
+                  asset_id: baseline.asset_id,
+                  anomaly_type: 'sigma_deviation',
+                  field: 'battery_cycles_delta',
+                  expected_value,
+                  actual_value,
+                  sigma_distance: String(Math.round(sigma * 100) / 100),
+                })
+                .returning();
+              anomaliesCreated.push(anomaly!);
+            }
           }
         }
       }
@@ -212,18 +277,27 @@ router.post(
 
         if (previousCount > 0 && currentCount > previousCount * 2) {
           const ratio = currentCount / previousCount;
-          const [anomaly] = await db
-            .insert(anomalies)
-            .values({
-              asset_id: assetIds[0]!,
-              anomaly_type: 'operator_anomaly',
-              field: 'fleet_utilization',
-              expected_value: String(previousCount),
-              actual_value: String(currentCount),
-              sigma_distance: String(Math.round(ratio * 100) / 100),
-            })
-            .returning();
-          anomaliesCreated.push(anomaly!);
+          const expected_value = String(previousCount);
+          const actual_value = String(currentCount);
+          const dup = await findPendingOperatorDuplicate({
+            asset_id: assetIds[0]!,
+            expected_value,
+            actual_value,
+          });
+          if (!dup) {
+            const [anomaly] = await db
+              .insert(anomalies)
+              .values({
+                asset_id: assetIds[0]!,
+                anomaly_type: 'operator_anomaly',
+                field: 'fleet_utilization',
+                expected_value,
+                actual_value,
+                sigma_distance: String(Math.round(ratio * 100) / 100),
+              })
+              .returning();
+            anomaliesCreated.push(anomaly!);
+          }
         }
       }
 
