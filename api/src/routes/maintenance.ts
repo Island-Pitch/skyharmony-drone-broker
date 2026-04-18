@@ -1,8 +1,9 @@
+/** SHD-15: Rules-based maintenance triggers and ticket workflow. */
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
 import { maintenanceRules, maintenanceTickets, assets } from '../db/schema.js';
-import { eq, and, gte as drizzleGte, lte as drizzleLte, sql, count } from 'drizzle-orm';
+import { eq, and, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
