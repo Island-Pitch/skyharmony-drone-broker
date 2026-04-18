@@ -54,8 +54,13 @@
     {
       "idx": 7,
       "version": "7",
+<<<<<<< HEAD
       "when": 1776700000000,
       "tag": "0007_shd6_11_19_tables",
+=======
+      "when": 1776494820057,
+      "tag": "0007_fuzzy_warbound",
+>>>>>>> fix/shd20-18-multi-type-aviation
       "breakpoints": true
     }
   ]

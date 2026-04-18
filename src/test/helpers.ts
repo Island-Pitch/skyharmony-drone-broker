@@ -65,6 +65,7 @@ export function createMockBooking(
     location: 'Test Location',
     status: 'pending',
     allocated_assets: [],
+    requested_assets: [],
     created_at: now,
     updated_at: now,
     ...overrides,

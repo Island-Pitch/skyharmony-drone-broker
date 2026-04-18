@@ -11,6 +11,14 @@ export const BookingStatus = z.enum([
 
 export type BookingStatusValue = z.infer<typeof BookingStatus>;
 
+/** Schema for a requested asset entry (asset type + count). */
+export const RequestedAssetSchema = z.object({
+  asset_type_id: z.string().uuid(),
+  count: z.number().int().positive(),
+});
+
+export type RequestedAsset = z.infer<typeof RequestedAssetSchema>;
+
 /** Booking record schema. */
 export const BookingSchema = z.object({
   id: z.string().uuid(),
@@ -23,6 +31,7 @@ export const BookingSchema = z.object({
   status: BookingStatus,
   notes: z.string().optional(),
   allocated_assets: z.array(z.string().uuid()).default([]),
+  requested_assets: z.array(RequestedAssetSchema).default([]),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
 });
@@ -38,6 +47,7 @@ export const CreateBookingInputSchema = z.object({
   drone_count: z.number().int().positive(),
   location: z.string(),
   notes: z.string().optional(),
+  requested_assets: z.array(RequestedAssetSchema).optional(),
 });
 
 export type CreateBookingInput = z.infer<typeof CreateBookingInputSchema>;

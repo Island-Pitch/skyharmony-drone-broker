@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements, allocationRules, analyticsConfig } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements, allocationRules, analyticsConfig, pilotCertifications } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -672,6 +672,38 @@ async function seed() {
     await db.insert(analyticsConfig).values(c).onConflictDoNothing();
   }
   console.log('  Inserted analytics config defaults');
+  // 11. Pilot certifications — 3 certs for existing operator users
+  const pilotCertRows = [
+    {
+      id: '00000000-0000-4000-8000-d00000000001',
+      user_id: operators[0]!.id,
+      cert_type: 'Part107',
+      cert_number: 'FA-107-2024-00421',
+      expiry_date: '2027-06-15',
+      verified: true,
+    },
+    {
+      id: '00000000-0000-4000-8000-d00000000002',
+      user_id: operators[1]!.id,
+      cert_type: 'Part135',
+      cert_number: 'FA-135-2023-01188',
+      expiry_date: '2026-12-01',
+      verified: true,
+    },
+    {
+      id: '00000000-0000-4000-8000-d00000000003',
+      user_id: operators[2]!.id,
+      cert_type: 'ATP',
+      cert_number: 'FA-ATP-2025-00067',
+      expiry_date: '2028-03-20',
+      verified: false,
+    },
+  ];
+
+  for (const pc of pilotCertRows) {
+    await db.insert(pilotCertifications).values(pc).onConflictDoNothing();
+  }
+  console.log(`  Inserted ${pilotCertRows.length} pilot certifications`);
 
   console.log('Seed complete!');
   await pool.end();

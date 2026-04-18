@@ -31,6 +31,7 @@ export class InMemoryBookingRepository implements IBookingRepository {
       status: 'pending',
       notes: input.notes,
       allocated_assets: [],
+      requested_assets: input.requested_assets ?? [],
       created_at: now,
       updated_at: now,
     };
