@@ -74,8 +74,22 @@ export const bookings = pgTable('bookings', {
   status: varchar('status', { length: 50 }).default('pending'),
   notes: text('notes'),
   allocated_assets: jsonb('allocated_assets').default([]),
+  requested_assets: jsonb('requested_assets').default([]),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  pilot_certifications                                               */
+/* ------------------------------------------------------------------ */
+export const pilotCertifications = pgTable('pilot_certifications', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').references(() => users.id).notNull(),
+  cert_type: varchar('cert_type', { length: 50 }).notNull(),
+  cert_number: varchar('cert_number', { length: 100 }).notNull(),
+  expiry_date: date('expiry_date').notNull(),
+  verified: boolean('verified').default(false),
+  created_at: timestamp('created_at').defaultNow(),
 });
 
 /* ------------------------------------------------------------------ */

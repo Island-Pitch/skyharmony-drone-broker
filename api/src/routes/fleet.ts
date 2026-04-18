@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
-import { assets, assetTypes } from '../db/schema.js';
+import { assets, assetTypes, pilotCertifications, users } from '../db/schema.js';
 import { eq, and, or, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -262,6 +262,61 @@ router.delete('/fleet/:id', auth, requireRole('CentralRepoAdmin'), async (req, r
     res.json({ data: { id: deleted.id, deleted: true } });
   } catch (err) {
     console.error('Fleet delete error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/*  Pilot certifications                                               */
+/* ------------------------------------------------------------------ */
+
+const CreatePilotCertSchema = z.object({
+  user_id: z.string().uuid(),
+  cert_type: z.enum(['Part107', 'Part135', 'ATP']),
+  cert_number: z.string().min(1),
+  expiry_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD'),
+  verified: z.boolean().optional().default(false),
+});
+
+// GET /api/fleet/pilots — list pilots with certifications
+router.get('/fleet/pilots', auth, async (_req, res) => {
+  try {
+    const rows = await db
+      .select({
+        id: pilotCertifications.id,
+        user_id: pilotCertifications.user_id,
+        user_name: users.name,
+        user_email: users.email,
+        cert_type: pilotCertifications.cert_type,
+        cert_number: pilotCertifications.cert_number,
+        expiry_date: pilotCertifications.expiry_date,
+        verified: pilotCertifications.verified,
+        created_at: pilotCertifications.created_at,
+      })
+      .from(pilotCertifications)
+      .innerJoin(users, eq(pilotCertifications.user_id, users.id));
+
+    res.json({ data: rows });
+  } catch (err) {
+    console.error('Fleet pilots list error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/fleet/pilots — add pilot certification
+router.post('/fleet/pilots', auth, validate(CreatePilotCertSchema), async (req, res) => {
+  try {
+    const body = req.body as z.infer<typeof CreatePilotCertSchema>;
+    const [cert] = await db.insert(pilotCertifications).values({
+      user_id: body.user_id,
+      cert_type: body.cert_type,
+      cert_number: body.cert_number,
+      expiry_date: body.expiry_date,
+      verified: body.verified,
+    }).returning();
+    res.status(201).json({ data: cert });
+  } catch (err) {
+    console.error('Fleet pilots create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

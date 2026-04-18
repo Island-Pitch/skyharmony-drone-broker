@@ -18,6 +18,11 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 };
 
+const RequestedAssetSchema = z.object({
+  asset_type_id: z.string().uuid(),
+  count: z.number().int().positive(),
+});
+
 const CreateBookingSchema = z.object({
   operator_id: z.string().uuid(),
   operator_name: z.string().min(1),
@@ -26,6 +31,7 @@ const CreateBookingSchema = z.object({
   drone_count: z.number().int().positive(),
   location: z.string().min(1),
   notes: z.string().optional(),
+  requested_assets: z.array(RequestedAssetSchema).optional(),
 });
 
 const UpdateBookingSchema = z.object({
@@ -83,6 +89,13 @@ router.post('/bookings', auth, validate(CreateBookingSchema), async (req, res) =
     // Non-admins must use their own userId as operator_id
     const isAdmin = req.user!.role === 'CentralRepoAdmin';
     const operator_id = isAdmin ? body.operator_id : req.user!.userId;
+
+    // Build requested_assets: use provided array or fall back to drone_count with drone type
+    const DRONE_TYPE_ID = '00000000-0000-4000-8000-000000000001';
+    const requested_assets = body.requested_assets && body.requested_assets.length > 0
+      ? body.requested_assets
+      : [{ asset_type_id: DRONE_TYPE_ID, count: body.drone_count }];
+
     const [booking] = await db.insert(bookings).values({
       ...body,
       operator_id,
@@ -90,6 +103,7 @@ router.post('/bookings', auth, validate(CreateBookingSchema), async (req, res) =
       end_date: body.end_date ? new Date(body.end_date) : null,
       status: 'pending',
       allocated_assets: [],
+      requested_assets,
     }).returning();
     res.status(201).json({ data: booking });
   } catch (err) {
