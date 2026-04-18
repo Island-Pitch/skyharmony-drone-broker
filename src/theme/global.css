@@ -983,6 +983,141 @@ form {
   line-height: 1.6;
 }
 
+/* Mission section */
+.landing-mission {
+  padding: 3rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-mission h2 {
+  font-size: 1.5rem;
+  color: var(--color-te-ra);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.landing-mission p {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+}
+
+.landing-mission em {
+  color: var(--color-te-ra);
+  font-style: italic;
+}
+
+/* Personas section */
+.landing-personas {
+  padding: 4rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.landing-personas h2 {
+  text-align: center;
+  font-size: 1.75rem;
+  color: var(--color-bone);
+  margin-bottom: 3rem;
+}
+
+.landing-personas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.landing-persona-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  border-left: 3px solid var(--color-te-ra);
+}
+
+.landing-persona-card h3 {
+  font-size: 1.1rem;
+  color: var(--color-te-ra);
+  margin-bottom: 0.75rem;
+}
+
+.landing-persona-card p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* Values section */
+.landing-values {
+  padding: 4rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.landing-values h2 {
+  text-align: center;
+  font-size: 1.75rem;
+  color: var(--color-bone);
+  margin-bottom: 3rem;
+}
+
+.landing-values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.landing-value {
+  text-align: center;
+  padding: 2rem;
+}
+
+.landing-value strong {
+  display: block;
+  font-size: 1.3rem;
+  color: var(--color-te-ra);
+  margin-bottom: 0.25rem;
+}
+
+.landing-value span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.landing-value p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* Bottom CTA */
+.landing-bottom-cta {
+  text-align: center;
+  padding: 4rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.landing-bottom-cta h2 {
+  font-size: 1.75rem;
+  color: var(--color-bone);
+  margin: 1rem 0 0.75rem;
+}
+
+.landing-bottom-cta p {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
 /* ============================================================
    Responsive Breakpoints
    ============================================================ */
@@ -1009,6 +1144,8 @@ form {
 
   .landing-hero h1 { font-size: 2rem; }
   .landing-features-grid { grid-template-columns: 1fr; }
+  .landing-personas-grid { grid-template-columns: 1fr; }
+  .landing-values-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
