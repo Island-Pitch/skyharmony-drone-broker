@@ -1,0 +1,22 @@
+{
+  "name": "SkyHarmony — Drone Fleet Coordination",
+  "short_name": "SkyHarmony",
+  "description": "Cooperative drone fleet coordination platform for show operators",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060a10",
+  "theme_color": "#0A3D62",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

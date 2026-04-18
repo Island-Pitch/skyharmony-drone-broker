@@ -11,6 +11,7 @@ import { OnboardingWizard } from './features/auth/OnboardingWizard';
 import { PrivacyPage } from './features/legal/PrivacyPage';
 import { TermsPage } from './features/legal/TermsPage';
 import { AccessibilityPage } from './features/legal/AccessibilityPage';
+import { DataSovereigntyPage } from './features/legal/DataSovereigntyPage';
 import { AuthProvider } from './auth/AuthContext';
 import { DataProvider } from './providers/DataProvider';
 import { NotFound } from './features/NotFound';
@@ -26,6 +27,7 @@ export function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
+        <Route path="/data-sovereignty" element={<DataSovereigntyPage />} />
 
         {/* Protected routes — DataProvider + auth required */}
         <Route element={<RequireAuth><DataProvider><AppLayout routes={appRoutes} /></DataProvider></RequireAuth>}>
