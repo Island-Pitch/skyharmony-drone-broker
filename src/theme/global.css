@@ -1633,3 +1633,70 @@ form {
   .role-grid { grid-template-columns: 1fr; }
   .onboarding-container { padding: 1.5rem; }
 }
+
+/* === 404 Page === */
+.not-found-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  padding: 2rem;
+}
+
+.not-found-container {
+  text-align: center;
+  max-width: 500px;
+}
+
+.not-found-drone {
+  margin-bottom: 1rem;
+  animation: drone-float 3s ease-in-out infinite;
+}
+
+@keyframes drone-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(2deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+.not-found-code {
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--color-te-ra);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
+.not-found-title {
+  font-size: 1.5rem;
+  color: var(--color-bone);
+  margin-bottom: 1rem;
+}
+
+.not-found-message {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+.not-found-actions .btn-primary,
+.not-found-actions .btn-secondary {
+  padding: 0.75rem 1.5rem;
+}
+
+.not-found-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  font-style: italic;
+}

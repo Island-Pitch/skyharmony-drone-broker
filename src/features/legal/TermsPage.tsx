@@ -49,7 +49,7 @@ export function TermsPage() {
 
         <section>
           <h2>7. Intellectual Property</h2>
-          <p>The Platform, including its design, code, and documentation, is the intellectual property of Island Pitch LLC. Your data remains your property; we claim no ownership of fleet, booking, or operational data you submit.</p>
+          <p>The Platform, including its design, code, and documentation, is the intellectual property of Sky Harmony LLC. Your data remains your property; we claim no ownership of fleet, booking, or operational data you submit.</p>
         </section>
 
         <section>
@@ -69,7 +69,7 @@ export function TermsPage() {
 
         <section>
           <h2>11. Contact</h2>
-          <p>Island Pitch LLC<br />legal@skyharmony.dev</p>
+          <p>Sky Harmony LLC<br />legal@skyharmony.dev</p>
         </section>
       </div>
     </div>

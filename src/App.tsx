@@ -13,6 +13,7 @@ import { TermsPage } from './features/legal/TermsPage';
 import { AccessibilityPage } from './features/legal/AccessibilityPage';
 import { AuthProvider } from './auth/AuthContext';
 import { DataProvider } from './providers/DataProvider';
+import { NotFound } from './features/NotFound';
 
 export function App() {
   return (
@@ -46,6 +47,8 @@ export function App() {
             );
           })}
         </Route>
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );

@@ -228,7 +228,7 @@ export function LandingPage() {
           <Link to="/accessibility">Accessibility</Link>
           <a href="https://skyharmony.us" target="_blank" rel="noopener noreferrer">SkyHarmony.us</a>
         </div>
-        <p className="landing-footer-copy">Sky Harmony Drone Shows &middot; Seal Beach, California &middot; Island Pitch LLC</p>
+        <p className="landing-footer-copy">Sky Harmony Drone Shows &middot; Seal Beach, California &middot; Sky Harmony LLC</p>
       </footer>
     </div>
   );

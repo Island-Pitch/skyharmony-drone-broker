@@ -56,7 +56,7 @@ export function PrivacyPage() {
 
         <section>
           <h2>7. Contact</h2>
-          <p>SkyHarmony Drone Broker is operated by Island Pitch LLC.<br />
+          <p>SkyHarmony Drone Broker is operated by Sky Harmony LLC.<br />
           Privacy inquiries: privacy@skyharmony.dev</p>
         </section>
       </div>
