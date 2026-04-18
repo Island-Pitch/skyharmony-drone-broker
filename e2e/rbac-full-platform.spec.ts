@@ -257,9 +257,11 @@ test.describe('Operator Role (OperatorAdmin)', () => {
     await expect(page.locator('.main-content').first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('can access scan page', async ({ page }) => {
+  test('scan page is forbidden', async ({ page }) => {
     await page.goto('/scan');
-    await expect(page.locator('.main-content').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.page.forbidden')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('403 — Forbidden')).toBeVisible();
+    await expect(page.locator('.scan-page')).not.toBeVisible();
   });
 
   test('sign out works', async ({ page }) => {
