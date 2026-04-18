@@ -6,6 +6,7 @@ import { routeComponents } from './routing/routeComponents';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { LandingPage } from './features/landing/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
+import { OnboardingWizard } from './features/auth/OnboardingWizard';
 import { PrivacyPage } from './features/legal/PrivacyPage';
 import { TermsPage } from './features/legal/TermsPage';
 import { AccessibilityPage } from './features/legal/AccessibilityPage';
@@ -19,6 +20,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/onboarding" element={<OnboardingWizard />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/accessibility" element={<AccessibilityPage />} />

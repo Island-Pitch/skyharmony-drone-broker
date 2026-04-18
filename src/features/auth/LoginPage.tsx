@@ -19,10 +19,16 @@ export function LoginPage() {
     try {
       if (isSignup) {
         await signup(email, password, name);
+        navigate('/onboarding');
       } else {
-        await login(email, password);
+        const result = await login(email, password);
+        // If user hasn't completed onboarding, redirect there
+        if (result.user && result.user.onboarded !== 'true') {
+          navigate('/onboarding');
+        } else {
+          navigate('/dashboard');
+        }
       }
-      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {

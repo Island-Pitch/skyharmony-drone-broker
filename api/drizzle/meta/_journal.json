@@ -8,6 +8,13 @@
       "when": 1776475170975,
       "tag": "0000_whole_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776477967686,
+      "tag": "0001_daffy_orphan",
+      "breakpoints": true
     }
   ]
 }

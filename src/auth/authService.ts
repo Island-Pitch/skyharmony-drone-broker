@@ -6,6 +6,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  onboarded?: string;
 }
 
 interface AuthResponse {

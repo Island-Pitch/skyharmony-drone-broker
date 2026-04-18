@@ -72,11 +72,45 @@ router.post('/auth/login', validate(LoginSchema), async (req, res) => {
     res.json({
       data: {
         token,
-        user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        user: { id: user.id, email: user.email, name: user.name, role: user.role, onboarded: user.onboarded },
       },
     });
   } catch (err) {
     console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+const OnboardSchema = z.object({
+  role: z.enum(['CentralRepoAdmin', 'OperatorAdmin', 'OperatorStaff', 'LogisticsStaff']),
+  organization: z.string().min(1),
+  region: z.string().min(1),
+  fleet_size: z.number().int().nonnegative().optional(),
+});
+
+router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => {
+  try {
+    const { role, organization, region, fleet_size } = req.body as z.infer<typeof OnboardSchema>;
+    const [user] = await db.update(users)
+      .set({ role, organization, region, fleet_size: fleet_size ?? 0, onboarded: 'true', updated_at: new Date() })
+      .where(eq(users.id, req.user!.userId))
+      .returning();
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Issue new token with updated role
+    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+    res.json({
+      data: {
+        token,
+        user: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization, region: user.region, fleet_size: user.fleet_size, onboarded: user.onboarded },
+      },
+    });
+  } catch (err) {
+    console.error('Onboard error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -89,7 +123,7 @@ router.get('/auth/me', auth, async (req, res) => {
       return;
     }
     res.json({
-      data: { id: user.id, email: user.email, name: user.name, role: user.role },
+      data: { id: user.id, email: user.email, name: user.name, role: user.role, organization: user.organization, region: user.region, fleet_size: user.fleet_size, onboarded: user.onboarded },
     });
   } catch (err) {
     console.error('Me error:', err);

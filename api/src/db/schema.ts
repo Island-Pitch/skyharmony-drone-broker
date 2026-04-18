@@ -19,6 +19,10 @@ export const users = pgTable('users', {
   password_hash: varchar('password_hash', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull().default('OperatorStaff'),
+  organization: varchar('organization', { length: 255 }),
+  region: varchar('region', { length: 255 }),
+  fleet_size: integer('fleet_size'),
+  onboarded: varchar('onboarded', { length: 10 }).default('false'),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
 });
