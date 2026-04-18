@@ -2,6 +2,8 @@
    SkyHarmony Drone Broker — Maori-Inspired Futuristic Theme
    ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700;800&display=swap');
+
 :root {
   /* Maori-inspired palette */
   --color-moana: #0A3D62;        /* deep teal/ocean */
@@ -12,10 +14,10 @@
   --color-bone: #F0EDE5;         /* cream/bone white */
 
   /* Semantic mapping */
-  --color-bg: #0B0E14;
+  --color-bg: #060a10;
   --color-surface: rgba(10, 61, 98, 0.25);
   --color-surface-hover: rgba(10, 61, 98, 0.4);
-  --color-border: rgba(212, 168, 67, 0.15);
+  --color-border: rgba(212, 168, 67, 0.12);
   --color-text: var(--color-bone);
   --color-text-muted: #8CA0B3;
   --color-primary: var(--color-te-ra);
@@ -24,28 +26,54 @@
   --color-success: #2ECC71;
   --color-warning: #F39C12;
   --color-danger: #E74C3C;
-  --sidebar-width: 250px;
-  --radius: 10px;
-  --font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --sidebar-width: 260px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-family: var(--font-body);
 
   /* Glassmorphism */
-  --glass-bg: rgba(10, 61, 98, 0.18);
-  --glass-border: rgba(212, 168, 67, 0.12);
-  --glass-blur: 16px;
+  --glass-bg: rgba(10, 61, 98, 0.14);
+  --glass-border: rgba(212, 168, 67, 0.08);
+  --glass-blur: 20px;
 
   /* Glow effects */
-  --glow-gold: 0 0 20px rgba(212, 168, 67, 0.08);
-  --glow-gold-hover: 0 0 30px rgba(212, 168, 67, 0.15);
-  --glow-teal: 0 0 20px rgba(10, 61, 98, 0.2);
+  --glow-gold: 0 2px 24px rgba(212, 168, 67, 0.06), 0 0 1px rgba(212, 168, 67, 0.1);
+  --glow-gold-hover: 0 4px 40px rgba(212, 168, 67, 0.12), 0 0 1px rgba(212, 168, 67, 0.2);
+  --glow-teal: 0 0 30px rgba(10, 61, 98, 0.25);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   background: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.6;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle star-field dots via radial gradients */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1px 1px at 10% 15%, rgba(212,168,67,0.3), transparent),
+    radial-gradient(1px 1px at 25% 45%, rgba(212,168,67,0.2), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(240,237,229,0.15), transparent),
+    radial-gradient(1px 1px at 55% 25%, rgba(212,168,67,0.25), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(240,237,229,0.1), transparent),
+    radial-gradient(1px 1px at 85% 35%, rgba(212,168,67,0.2), transparent),
+    radial-gradient(1px 1px at 92% 75%, rgba(240,237,229,0.15), transparent),
+    radial-gradient(1.5px 1.5px at 15% 70%, rgba(212,168,67,0.15), transparent),
+    radial-gradient(1px 1px at 60% 10%, rgba(240,237,229,0.12), transparent),
+    radial-gradient(1px 1px at 78% 90%, rgba(212,168,67,0.18), transparent);
+  opacity: 0.6;
 }
 
 /* Animated gradient background for main area */
@@ -121,10 +149,11 @@ body {
 }
 
 .sidebar-header h1 {
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--color-te-ra);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .sidebar-header .subtitle {
@@ -281,10 +310,12 @@ body {
    ============================================================ */
 
 .page h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.75rem;
   color: var(--color-bone);
+  letter-spacing: -0.01em;
 }
 
 /* ============================================================
@@ -302,30 +333,50 @@ body {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: var(--glow-gold);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Subtle animated shimmer across cards */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,168,67,0.03), transparent);
+  transition: left 0.6s ease;
+}
+
+.stat-card:hover::after { left: 150%; }
+
 .stat-card:hover {
-  border-color: rgba(212, 168, 67, 0.25);
+  border-color: rgba(212, 168, 67, 0.2);
   box-shadow: var(--glow-gold-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.01);
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
   font-weight: 700;
   color: var(--color-te-ra);
+  line-height: 1.1;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--color-text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 /* ============================================================
@@ -334,57 +385,93 @@ body {
 
 .data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--glass-border);
 }
 
 .data-table th,
 .data-table td {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   text-align: left;
-  border-bottom: 1px solid rgba(212, 168, 67, 0.06);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.04);
 }
 
 .data-table th {
-  background: rgba(10, 61, 98, 0.3);
-  font-size: 0.75rem;
+  background: rgba(10, 61, 98, 0.2);
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--color-te-ra);
   font-weight: 600;
+  padding: 0.875rem 1.25rem;
+}
+
+.data-table tbody tr {
+  transition: background 0.2s ease;
 }
 
 .data-table tr:hover td {
-  background: rgba(10, 61, 98, 0.12);
+  background: rgba(10, 61, 98, 0.1);
+}
+
+.data-table td {
+  font-size: 0.875rem;
 }
 
 /* ============================================================
    Status Badges — Maori Palette
    ============================================================ */
 
-.status-badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: capitalize;
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.status-badge.active { background: rgba(46,204,113,0.15); color: var(--color-success); }
-.status-badge.idle { background: rgba(212,168,67,0.15); color: var(--color-te-ra); }
-.status-badge.maintenance { background: rgba(192,57,43,0.15); color: var(--color-whenua); }
+.status-badge {
+  padding: 0.3rem 0.65rem 0.3rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Pulsing status dot */
+.status-badge::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-badge.available, .status-badge.active { background: rgba(46,204,113,0.12); color: var(--color-success); }
+.status-badge.idle { background: rgba(212,168,67,0.12); color: var(--color-te-ra); }
+.status-badge.maintenance { background: rgba(192,57,43,0.12); color: var(--color-whenua); }
+.status-badge.retired { background: rgba(140,160,179,0.12); color: var(--color-text-muted); }
+.status-badge.retired::before { animation: none; opacity: 0.4; }
+.status-badge.in_transit { background: rgba(10,61,98,0.25); color: #5BA3D9; }
 
 /* Booking status badges */
-.status-badge.pending { background: rgba(212,168,67,0.15); color: var(--color-te-ra); }
-.status-badge.allocated { background: rgba(10,61,98,0.3); color: #5BA3D9; }
-.status-badge.confirmed { background: rgba(46,204,113,0.15); color: var(--color-success); }
-.status-badge.completed { background: rgba(46,204,113,0.25); color: var(--color-success); }
-.status-badge.cancelled { background: rgba(192,57,43,0.15); color: var(--color-whenua); }
+.status-badge.pending { background: rgba(212,168,67,0.12); color: var(--color-te-ra); }
+.status-badge.allocated { background: rgba(10,61,98,0.25); color: #5BA3D9; }
+.status-badge.confirmed { background: rgba(46,204,113,0.12); color: var(--color-success); }
+.status-badge.completed { background: rgba(46,204,113,0.18); color: var(--color-success); }
+.status-badge.completed::before { animation: none; }
+.status-badge.cancelled { background: rgba(192,57,43,0.12); color: var(--color-whenua); }
+.status-badge.cancelled::before { animation: none; opacity: 0.4; }
 
 /* ============================================================
    Missions
@@ -480,22 +567,29 @@ body {
    ============================================================ */
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-te-ra), #B8922F);
+  background: linear-gradient(135deg, var(--color-te-ra) 0%, #B8922F 100%);
   color: var(--color-te-po);
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(212, 168, 67, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 12px rgba(212, 168, 67, 0.2);
+  letter-spacing: 0.02em;
+  font-family: var(--font-body);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-te-ra));
-  box-shadow: 0 4px 16px rgba(212, 168, 67, 0.3);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-te-ra) 100%);
+  box-shadow: 0 4px 24px rgba(212, 168, 67, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 6px rgba(212, 168, 67, 0.15);
 }
 
 /* ============================================================
@@ -680,7 +774,8 @@ form {
 }
 
 .dashboard-widget h3 {
-  font-size: 1.125rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   font-weight: 600;
   margin-bottom: 1rem;
   color: var(--color-bone);
@@ -875,7 +970,8 @@ form {
 }
 
 .landing-hero h1 {
-  font-size: 3.5rem;
+  font-family: var(--font-display);
+  font-size: 4rem;
   font-weight: 800;
   color: var(--color-bone);
   letter-spacing: -0.02em;
@@ -905,13 +1001,14 @@ form {
   background: linear-gradient(135deg, var(--color-te-ra), #B8922F);
   color: var(--color-te-po);
   text-decoration: none;
-  padding: 0.875rem 2rem;
-  border-radius: var(--radius);
+  padding: 0.875rem 2.5rem;
+  border-radius: 999px;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(212, 168, 67, 0.25);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 24px rgba(212, 168, 67, 0.25);
+  font-family: var(--font-body);
 }
 
 .landing-cta:hover {
@@ -952,10 +1049,10 @@ form {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 2rem;
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: var(--glow-gold);
 }
 
@@ -971,7 +1068,8 @@ form {
 }
 
 .landing-feature-card h3 {
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
   color: var(--color-bone);
