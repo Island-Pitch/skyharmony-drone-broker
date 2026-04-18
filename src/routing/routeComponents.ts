@@ -14,6 +14,7 @@ import { TelemetryPage } from '@/features/telemetry/TelemetryPage';
 import { OperatorDashboard } from '@/features/operator-dashboard/OperatorDashboard';
 import { SettlementsPage } from '@/features/settlements/SettlementsPage';
 import { AdminDashboard } from '@/features/dashboard/AdminDashboard';
+import { AnalyticsPage } from '@/features/analytics/AnalyticsPage';
 
 export const routeComponents: Record<string, ComponentType> = {
   dashboard: AdminDashboard,
@@ -31,4 +32,5 @@ export const routeComponents: Record<string, ComponentType> = {
   forecasting: ForecastingPage,
   telemetry: TelemetryPage,
   settlements: SettlementsPage,
+  analytics: AnalyticsPage,
 };
