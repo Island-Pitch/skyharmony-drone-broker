@@ -66,25 +66,24 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
   try {
     const bookingId = req.params.bookingId as string;
 
-    const [booking] = await db
-      .select()
-      .from(bookings)
-      .where(eq(bookings.id, bookingId))
-      .limit(1);
-
-    if (!booking) {
-      res.status(404).json({ error: 'Booking not found' });
-      return;
-    }
-
-    if (booking.status !== 'pending' && booking.status !== 'confirmed') {
-      res.status(422).json({ error: `Cannot allocate for booking with status '${booking.status}'` });
-      return;
-    }
-
     const droneTypeId = '00000000-0000-4000-8000-000000000001';
 
     const result = await db.transaction(async (tx) => {
+      const [booking] = await tx
+        .select()
+        .from(bookings)
+        .where(eq(bookings.id, bookingId))
+        .for('update')
+        .limit(1);
+
+      if (!booking) {
+        return { ok: false as const, code: 'not_found' as const };
+      }
+
+      if (booking.status !== 'pending' && booking.status !== 'confirmed') {
+        return { ok: false as const, code: 'invalid_status' as const, status: booking.status };
+      }
+
       const availableDrones = await tx
         .select()
         .from(assets)
@@ -98,7 +97,12 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
         .for('update');
 
       if (availableDrones.length < booking.drone_count) {
-        return { ok: false as const, found: availableDrones.length };
+        return {
+          ok: false as const,
+          code: 'insufficient' as const,
+          needed: booking.drone_count,
+          found: availableDrones.length,
+        };
       }
 
       const allocatedIds = availableDrones.map((d) => d.id);
@@ -124,8 +128,16 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
     });
 
     if (!result.ok) {
+      if (result.code === 'not_found') {
+        res.status(404).json({ error: 'Booking not found' });
+        return;
+      }
+      if (result.code === 'invalid_status') {
+        res.status(422).json({ error: `Cannot allocate for booking with status '${result.status}'` });
+        return;
+      }
       res.status(422).json({
-        error: `Not enough drones available. Need ${booking.drone_count}, found ${result.found}`,
+        error: `Not enough drones available. Need ${result.needed}, found ${result.found}`,
       });
       return;
     }
