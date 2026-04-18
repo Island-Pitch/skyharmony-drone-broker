@@ -39,6 +39,7 @@ function createMockContext(assets: Asset[], scannedAssetIds: string[] = []): Dat
         return Promise.resolve([]);
       }),
     } as unknown as DataContextValue['scanService'],
+    mode: 'demo' as const,
   };
 }
 
