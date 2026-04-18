@@ -17,35 +17,36 @@ import { DataProvider } from './providers/DataProvider';
 export function App() {
   return (
     <AuthProvider>
-      <DataProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/onboarding" element={<OnboardingWizard />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/accessibility" element={<AccessibilityPage />} />
-          <Route element={<RequireAuth><AppLayout routes={appRoutes} /></RequireAuth>}>
-            {appRoutes.map((route) => {
-              const Component = routeComponents[route.path] ?? PlaceholderPage;
-              const element = route.permission ? (
-                <RouteGuard permission={route.permission}>
-                  <Component />
-                </RouteGuard>
-              ) : (
+      <Routes>
+        {/* Public routes — no DataProvider, no auth required */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/onboarding" element={<DataProvider><OnboardingWizard /></DataProvider>} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/accessibility" element={<AccessibilityPage />} />
+
+        {/* Protected routes — DataProvider + auth required */}
+        <Route element={<RequireAuth><DataProvider><AppLayout routes={appRoutes} /></DataProvider></RequireAuth>}>
+          {appRoutes.map((route) => {
+            const Component = routeComponents[route.path] ?? PlaceholderPage;
+            const element = route.permission ? (
+              <RouteGuard permission={route.permission}>
                 <Component />
-              );
-              return (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={element}
-                />
-              );
-            })}
-          </Route>
-        </Routes>
-      </DataProvider>
+              </RouteGuard>
+            ) : (
+              <Component />
+            );
+            return (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={element}
+              />
+            );
+          })}
+        </Route>
+      </Routes>
     </AuthProvider>
   );
 }
