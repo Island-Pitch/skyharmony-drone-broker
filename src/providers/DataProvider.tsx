@@ -3,6 +3,7 @@ import { InMemoryAssetRepository } from '@/data/repositories/InMemoryAssetReposi
 import { InMemoryAuditRepository } from '@/data/repositories/InMemoryAuditRepository';
 import { InMemoryBookingRepository } from '@/data/repositories/InMemoryBookingRepository';
 import { InMemoryCustodyRepository } from '@/data/repositories/InMemoryCustodyRepository';
+import { AllocationService } from '@/services/AllocationService';
 import { AssetService } from '@/services/AssetService';
 import { AuditService } from '@/services/AuditService';
 import { BookingService } from '@/services/BookingService';
@@ -14,6 +15,7 @@ import type { IBookingRepository } from '@/data/repositories/InMemoryBookingRepo
 
 export interface DataContextValue {
   assetRepo: IAssetRepository;
+  allocationService: AllocationService;
   assetService: AssetService;
   auditService: AuditService;
   bookingRepo: IBookingRepository;
@@ -40,8 +42,9 @@ export function DataProvider({ children }: DataProviderProps) {
     const auditService = new AuditService(auditRepo);
     const bookingRepo = new InMemoryBookingRepository();
     const bookingService = new BookingService(bookingRepo);
+    const allocationService = new AllocationService(assetRepo, bookingRepo, bookingService, auditService);
     const scanService = new ScanService(assetRepo, custodyRepo, auditService);
-    return { assetRepo, assetService, auditService, bookingRepo, bookingService, scanService };
+    return { assetRepo, allocationService, assetService, auditService, bookingRepo, bookingService, scanService };
   }, []);
 
   return (
