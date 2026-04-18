@@ -9,6 +9,7 @@ import scanRouter from './routes/scan.js';
 import incidentsRouter from './routes/incidents.js';
 import allocationRouter from './routes/allocation.js';
 import billingRouter from './routes/billing.js';
+import invoicesRouter from './routes/invoices.js';
 import logisticsRouter from './routes/logistics.js';
 import maintenanceRouter from './routes/maintenance.js';
 
@@ -34,6 +35,7 @@ app.use('/api', scanRouter);
 app.use('/api', incidentsRouter);
 app.use('/api', allocationRouter);
 app.use('/api', billingRouter);
+app.use('/api', invoicesRouter);
 app.use('/api', logisticsRouter);
 app.use('/api', maintenanceRouter);
 

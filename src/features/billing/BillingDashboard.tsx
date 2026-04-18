@@ -1,6 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { DataContext } from '@/providers/DataProvider';
 import { apiGet } from '@/data/repositories/http/apiClient';
+import { useInvoices } from '@/hooks/useInvoices';
+import { InvoiceList } from './InvoiceList';
+import { InvoiceDetail } from './InvoiceDetail';
+import type { Invoice } from '@/hooks/useInvoices';
 
 interface OperatorBilling {
   operator_id: string;
@@ -28,6 +32,10 @@ export function BillingDashboard() {
   const ctx = useContext(DataContext);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [showInvoices, setShowInvoices] = useState(false);
+
+  const { invoices, summary: invoiceSummary, loading: invoicesLoading, payInvoice } = useInvoices();
 
   useEffect(() => {
     if (ctx?.mode === 'api') {
@@ -64,11 +72,74 @@ export function BillingDashboard() {
     );
   }
 
+  // Invoice detail view
+  if (selectedInvoice) {
+    return (
+      <div className="page">
+        <h2>Billing &amp; Revenue</h2>
+        <InvoiceDetail
+          invoice={selectedInvoice}
+          onPay={async (invoiceId, paymentMethod) => {
+            await payInvoice(invoiceId, paymentMethod);
+            // Update the selected invoice after payment
+            const updated = invoices.find((i) => i.id === invoiceId);
+            if (updated) setSelectedInvoice(updated);
+            else setSelectedInvoice(null);
+          }}
+          onBack={() => setSelectedInvoice(null)}
+        />
+      </div>
+    );
+  }
+
+  // Invoice list view
+  if (showInvoices) {
+    return (
+      <div className="page">
+        <h2>Billing &amp; Revenue</h2>
+        <button
+          onClick={() => setShowInvoices(false)}
+          style={{ marginBottom: '1rem', background: 'transparent', border: '1px solid var(--color-border, #ccc)', padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer' }}
+        >
+          Back to Summary
+        </button>
+        <h3>All Invoices</h3>
+        {invoicesLoading ? (
+          <p>Loading invoices...</p>
+        ) : (
+          <InvoiceList invoices={invoices} onSelect={setSelectedInvoice} />
+        )}
+      </div>
+    );
+  }
+
   const maxTotal = Math.max(...summary.operators.map((o) => o.total_revenue), 1);
 
   return (
     <div className="page">
       <h2>Billing &amp; Revenue</h2>
+
+      {/* Invoice Summary Cards */}
+      {invoiceSummary && (
+        <div className="stats-grid" style={{ marginBottom: '2rem' }}>
+          <div className="stat-card">
+            <span className="stat-value">{formatCurrency(invoiceSummary.total_billed)}</span>
+            <span className="stat-label">Total Billed</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-value" style={{ color: 'var(--color-success, #198754)' }}>{formatCurrency(invoiceSummary.total_paid)}</span>
+            <span className="stat-label">Total Paid</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-value" style={{ color: 'var(--color-danger, #dc3545)' }}>{formatCurrency(invoiceSummary.total_outstanding)}</span>
+            <span className="stat-label">Outstanding</span>
+          </div>
+          <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setShowInvoices(true)}>
+            <span className="stat-value">{invoiceSummary.invoice_count}</span>
+            <span className="stat-label">View Invoices</span>
+          </div>
+        </div>
+      )}
 
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">

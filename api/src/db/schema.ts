@@ -142,6 +142,30 @@ export const transportLegs = pgTable('transport_legs', {
 /* ------------------------------------------------------------------ */
 /*  incidents                                                          */
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  invoices                                                           */
+/* ------------------------------------------------------------------ */
+export const invoices = pgTable('invoices', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  booking_id: uuid('booking_id').references(() => bookings.id),
+  operator_id: uuid('operator_id').references(() => users.id),
+  operator_name: varchar('operator_name', { length: 255 }),
+  status: varchar('status', { length: 20 }).notNull().default('draft'),
+  line_items: jsonb('line_items').notNull().default([]),
+  subtotal: numeric('subtotal', { precision: 12, scale: 2 }).notNull().default('0'),
+  tax: numeric('tax', { precision: 12, scale: 2 }).notNull().default('0'),
+  total: numeric('total', { precision: 12, scale: 2 }).notNull().default('0'),
+  due_date: timestamp('due_date'),
+  paid_date: timestamp('paid_date'),
+  payment_method: varchar('payment_method', { length: 20 }).default('pending'),
+  stripe_payment_id: varchar('stripe_payment_id', { length: 255 }),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  incidents                                                          */
+/* ------------------------------------------------------------------ */
 export const incidents = pgTable('incidents', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   asset_id: uuid('asset_id').references(() => assets.id),

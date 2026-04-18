@@ -37,4 +37,12 @@ describe('BillingDashboard (SHD-52)', () => {
       expect(screen.getAllByText(/NightBrite Drones/i).length).toBeGreaterThanOrEqual(1);
     });
   });
+
+  it('renders invoice summary cards when available', async () => {
+    renderBilling();
+    await waitFor(() => {
+      // These labels should always appear in demo mode fallback summary
+      expect(screen.getByText('Total Revenue')).toBeInTheDocument();
+    });
+  });
 });

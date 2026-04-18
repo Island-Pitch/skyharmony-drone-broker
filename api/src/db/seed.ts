@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, manifests, transportLegs, maintenanceRules, maintenanceTickets } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -451,6 +451,47 @@ async function seed() {
     await db.insert(maintenanceTickets).values(t).onConflictDoNothing();
   }
   console.log(`  Inserted ${sampleTickets.length} maintenance tickets`);
+  // 8. Invoices — 10 sample invoices from the first 10 bookings
+  const ALLOCATION_FEE = 350;
+  const INSURANCE_RATE = 0.07;
+  const TAX_RATE = 0.085;
+  const invoiceStatuses = ['draft', 'sent', 'paid', 'overdue', 'paid', 'sent', 'draft', 'paid', 'overdue', 'sent'] as const;
+  const paymentMethods = ['pending', 'pending', 'credit_card', 'pending', 'ach', 'pending', 'pending', 'credit_card', 'pending', 'pending'] as const;
+
+  const invoiceRows: (typeof invoices.$inferInsert)[] = [];
+  for (let i = 0; i < 10 && i < bookingRows.length; i++) {
+    const bk = bookingRows[i]!;
+    const allocationTotal = bk.drone_count * ALLOCATION_FEE;
+    const insuranceTotal = Math.round(allocationTotal * INSURANCE_RATE * 100) / 100;
+    const lineItems = [
+      { description: 'Drone allocation fee', quantity: bk.drone_count, unit_price: ALLOCATION_FEE, total: allocationTotal },
+      { description: 'Drone insurance coverage', quantity: 1, unit_price: insuranceTotal, total: insuranceTotal },
+    ];
+    const subtotal = allocationTotal + insuranceTotal;
+    const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
+    const total = Math.round((subtotal + tax) * 100) / 100;
+    const dueDate = new Date(now);
+    dueDate.setDate(dueDate.getDate() + 30 + i * 3);
+    const status = invoiceStatuses[i]!;
+    const paidDate = status === 'paid' ? new Date(now.getTime() - (i + 1) * 86400000) : null;
+
+    invoiceRows.push({
+      id: crypto.randomUUID(),
+      booking_id: bk.id!,
+      operator_id: bk.operator_id!,
+      operator_name: bk.operator_name!,
+      status,
+      line_items: lineItems,
+      subtotal: String(subtotal),
+      tax: String(tax),
+      total: String(total),
+      due_date: dueDate,
+      paid_date: paidDate,
+      payment_method: paymentMethods[i]!,
+    });
+  }
+  await db.insert(invoices).values(invoiceRows).onConflictDoNothing();
+  console.log(`  Inserted ${invoiceRows.length} invoices`);
 
   console.log('Seed complete!');
   await pool.end();
