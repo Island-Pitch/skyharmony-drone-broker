@@ -222,9 +222,7 @@ export function OperatorDashboard() {
             <TeamManager
               team={team}
               isAdmin={isAdmin}
-              onInvite={async (email, name, r) => {
-                await inviteTeamMember(email, name, r);
-              }}
+              onInvite={async (email, name, r) => inviteTeamMember(email, name, r)}
               onRemove={removeTeamMember}
             />
           )}

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { db } from '../db/connection.js';
 import { users, assets, bookings, invoices, settlements } from '../db/schema.js';
 import { eq, and, count, gte } from 'drizzle-orm';
@@ -224,18 +225,18 @@ router.post(
         return;
       }
 
-      // Create user with a temporary password hash
-      const tempPassword = await bcrypt.hash('changeme123', 10);
+      const temporaryPassword = crypto.randomBytes(24).toString('base64url');
+      const password_hash = await bcrypt.hash(temporaryPassword, 10);
       const [newUser] = await db
         .insert(users)
         .values({
           email,
           name,
-          password_hash: tempPassword,
+          password_hash,
           role,
           organization: currentUser.organization,
           region: currentUser.region,
-          onboarded: 'true',
+          onboarded: 'false',
         })
         .returning();
 
@@ -246,6 +247,7 @@ router.post(
           email: newUser!.email,
           role: newUser!.role,
           created_at: newUser!.created_at,
+          temporary_password: temporaryPassword,
         },
       });
     } catch (err) {

@@ -24,6 +24,13 @@ export const appRoutes: AppRoute[] = [
   { path: 'missions', label: 'Missions', icon: 'map', nav: ['side', 'top', 'mobile'] },
   { path: 'marketplace', label: 'Marketplace', icon: 'shopping-bag', nav: ['side', 'top', 'mobile'] },
   { path: 'analytics', label: 'Analytics', icon: 'bar-chart', nav: ['side', 'mobile'], permission: Permission.FleetSummary },
+  {
+    path: 'terms-config',
+    label: 'Terms',
+    icon: 'shield',
+    nav: ['side', 'mobile'],
+    permission: Permission.AssetCreate,
+  },
   { path: 'sponsors', label: 'Sponsors', icon: 'star', nav: ['side', 'mobile'], permission: Permission.BookingRead },
   { path: 'operator/dashboard', label: 'Operator Dashboard', icon: 'grid', nav: [] },
 ];

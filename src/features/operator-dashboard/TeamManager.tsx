@@ -4,7 +4,11 @@ import type { TeamMember } from '@/hooks/useOperatorOverview';
 interface TeamManagerProps {
   team: TeamMember[];
   isAdmin: boolean;
-  onInvite: (email: string, name: string, role: string) => Promise<void>;
+  onInvite: (
+    email: string,
+    name: string,
+    role: string,
+  ) => Promise<Pick<TeamMember, 'temporary_password'> | void>;
   onRemove: (userId: string) => Promise<void>;
 }
 
@@ -16,6 +20,7 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [inviteTempPassword, setInviteTempPassword] = useState<string | null>(null);
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +28,11 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
     setInviting(true);
     setInviteError(null);
     try {
-      await onInvite(inviteEmail.trim(), inviteName.trim(), 'OperatorStaff');
+      setInviteTempPassword(null);
+      const result = await onInvite(inviteEmail.trim(), inviteName.trim(), 'OperatorStaff');
+      if (result?.temporary_password) {
+        setInviteTempPassword(result.temporary_password);
+      }
       setInviteEmail('');
       setInviteName('');
       setShowInvite(false);
@@ -60,6 +69,16 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
           </button>
         )}
       </div>
+
+      {inviteTempPassword && (
+        <div className="dashboard-widget" style={{ marginBottom: '1rem' }}>
+          <p style={{ margin: 0, fontWeight: 600 }}>Initial sign-in password (copy and share securely)</p>
+          <code style={{ display: 'block', marginTop: '0.5rem', wordBreak: 'break-all' }}>{inviteTempPassword}</code>
+          <button type="button" className="btn-primary" style={{ marginTop: '0.75rem' }} onClick={() => setInviteTempPassword(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Slide-in invite panel */}
       <div className={`op-invite-panel ${showInvite ? 'op-invite-panel--open' : ''}`}>

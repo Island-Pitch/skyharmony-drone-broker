@@ -42,6 +42,8 @@ export interface TeamMember {
   email: string;
   role: string;
   created_at: string;
+  /** Present only on create / invite responses so the admin can share the initial password. */
+  temporary_password?: string;
 }
 
 export function useOperatorOverview() {
