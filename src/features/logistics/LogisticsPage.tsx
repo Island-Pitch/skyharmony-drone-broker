@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useLogistics } from '@/hooks/useLogistics';
 import { ManifestDetail } from './ManifestDetail';
+import { RouteOptimizer } from './RouteOptimizer';
 import type { Manifest } from '@/data/models/manifest';
+
+type LogisticsTab = 'manifests' | 'routes';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: '#6b7280',
@@ -67,6 +70,7 @@ function ManifestRow({ manifest, onSelect }: { manifest: Manifest; onSelect: (id
 export function LogisticsPage() {
   const { manifests, loading } = useLogistics();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<LogisticsTab>('manifests');
 
   if (selectedId) {
     return (
@@ -76,12 +80,39 @@ export function LogisticsPage() {
     );
   }
 
+  const tabStyle = (tab: LogisticsTab): React.CSSProperties => ({
+    padding: '0.5rem 1.25rem',
+    border: 'none',
+    borderBottom: activeTab === tab ? '2px solid #2563eb' : '2px solid transparent',
+    background: 'transparent',
+    color: activeTab === tab ? '#60a5fa' : 'inherit',
+    fontWeight: activeTab === tab ? 600 : 400,
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    opacity: activeTab === tab ? 1 : 0.6,
+  });
+
   return (
     <div className="page">
       <h2>Logistics</h2>
-      <p style={{ opacity: 0.6, marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-        Manage transport manifests and track asset deliveries.
+      <p style={{ opacity: 0.6, marginBottom: '1rem', fontSize: '0.9rem' }}>
+        Manage transport manifests and optimize delivery routes.
       </p>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '0.25rem', borderBottom: '1px solid var(--color-border, #333)', marginBottom: '1.5rem' }}>
+        <button type="button" style={tabStyle('manifests')} onClick={() => setActiveTab('manifests')}>
+          Manifests
+        </button>
+        <button type="button" style={tabStyle('routes')} onClick={() => setActiveTab('routes')}>
+          Route Optimizer
+        </button>
+      </div>
+
+      {activeTab === 'routes' && <RouteOptimizer />}
+
+      {activeTab === 'manifests' && (<>
+      {/* Original manifests content */}
 
       {loading ? (
         <p style={{ opacity: 0.6 }}>Loading manifests...</p>
@@ -127,6 +158,7 @@ export function LogisticsPage() {
           </table>
         </div>
       )}
+      </>)}
     </div>
   );
 }
