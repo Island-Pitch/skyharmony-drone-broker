@@ -56,7 +56,7 @@ async function seed() {
 
   // 1. Create admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
-  const adminId = '00000000-0000-4000-8000-admin0000001';
+  const adminId = '00000000-0000-4000-8000-ad0100000001';
 
   await db.insert(users).values({
     id: adminId,
