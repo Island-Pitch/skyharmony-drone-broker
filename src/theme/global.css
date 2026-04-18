@@ -1396,6 +1396,114 @@ form {
   .dashboard-widget h3 { font-size: 1rem; }
 }
 
+/* ============================================================
+   Fleet — Asset Type Cards & Expanded Rows
+   ============================================================ */
+
+.fleet-type-cards {
+  margin-bottom: 1.5rem;
+}
+
+.asset-type-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.asset-type-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(212, 168, 67, 0.12);
+  color: var(--color-te-ra);
+  flex-shrink: 0;
+}
+
+.asset-type-card-desc {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}
+
+.fleet-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.fleet-type-filter {
+  min-width: 220px;
+}
+
+.asset-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(212, 168, 67, 0.08);
+  color: var(--color-te-ra);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.asset-type-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-expand {
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  color: var(--color-te-ra);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font-family);
+}
+
+.btn-expand:hover {
+  background: rgba(212, 168, 67, 0.2);
+}
+
+.detail-row td {
+  background: rgba(10, 61, 98, 0.08) !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
+.attribute-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.attribute-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius);
+  background: rgba(212, 168, 67, 0.06);
+  border: 1px solid rgba(212, 168, 67, 0.1);
+  font-size: 0.78rem;
+  color: var(--color-text);
+}
+
+.attribute-tag-label {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
 /* === Login Page === */
 .login-page {
   min-height: 100vh;

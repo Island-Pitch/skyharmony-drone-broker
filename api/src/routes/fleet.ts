@@ -91,10 +91,22 @@ router.get('/fleet/summary', auth, async (req, res) => {
   }
 });
 
-// GET /api/fleet/types
+// GET /api/fleet/types — returns asset types with count of assets per type
 router.get('/fleet/types', auth, async (_req, res) => {
   try {
-    const rows = await db.select().from(assetTypes);
+    const rows = await db
+      .select({
+        id: assetTypes.id,
+        name: assetTypes.name,
+        description: assetTypes.description,
+        created_at: assetTypes.created_at,
+        updated_at: assetTypes.updated_at,
+        asset_count: count(assets.id),
+      })
+      .from(assetTypes)
+      .leftJoin(assets, eq(assetTypes.id, assets.asset_type_id))
+      .groupBy(assetTypes.id, assetTypes.name, assetTypes.description, assetTypes.created_at, assetTypes.updated_at);
+
     res.json({ data: rows });
   } catch (err) {
     console.error('Fleet types error:', err);
