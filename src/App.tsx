@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
 import { RequireAuth } from './components/RequireAuth';
+import { RouteGuard } from './auth/RouteGuard';
 import { appRoutes } from './routing/appRoutes';
 import { routeComponents } from './routing/routeComponents';
 import { PlaceholderPage } from './components/PlaceholderPage';
@@ -27,11 +28,18 @@ export function App() {
           <Route element={<RequireAuth><AppLayout routes={appRoutes} /></RequireAuth>}>
             {appRoutes.map((route) => {
               const Component = routeComponents[route.path] ?? PlaceholderPage;
+              const element = route.permission ? (
+                <RouteGuard permission={route.permission}>
+                  <Component />
+                </RouteGuard>
+              ) : (
+                <Component />
+              );
               return (
                 <Route
                   key={route.path}
                   path={route.path}
-                  element={<Component />}
+                  element={element}
                 />
               );
             })}

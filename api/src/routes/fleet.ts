@@ -31,14 +31,18 @@ const UpdateAssetSchema = z.object({
 });
 
 // GET /api/fleet/summary — must come before /:id
-router.get('/fleet/summary', auth, async (_req, res) => {
+router.get('/fleet/summary', auth, async (req, res) => {
   try {
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    const scopeFilter = isAdmin ? undefined : eq(assets.current_operator_id, req.user!.userId);
+
     const rows = await db
       .select({
         status: assets.status,
         count: count(),
       })
       .from(assets)
+      .where(scopeFilter)
       .groupBy(assets.status);
 
     const total = rows.reduce((s, r) => s + Number(r.count), 0);
@@ -51,6 +55,7 @@ router.get('/fleet/summary', auth, async (_req, res) => {
     const mfrRows = await db
       .select({ manufacturer: assets.manufacturer, count: count() })
       .from(assets)
+      .where(scopeFilter)
       .groupBy(assets.manufacturer);
     const by_manufacturer: Record<string, number> = {};
     for (const r of mfrRows) {
@@ -61,6 +66,7 @@ router.get('/fleet/summary', auth, async (_req, res) => {
     const typeRows = await db
       .select({ asset_type_id: assets.asset_type_id, count: count() })
       .from(assets)
+      .where(scopeFilter)
       .groupBy(assets.asset_type_id);
     const by_type: Record<string, number> = {};
     for (const r of typeRows) {
@@ -102,7 +108,9 @@ router.get('/fleet', auth, async (req, res) => {
       per_page = '50',
     } = req.query as Record<string, string | undefined>;
 
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
     const conditions = [];
+    if (!isAdmin) conditions.push(eq(assets.current_operator_id, req.user!.userId));
     if (type) conditions.push(eq(assets.asset_type_id, type));
     if (status) conditions.push(eq(assets.status, status));
     if (search) {
@@ -187,6 +195,21 @@ router.patch('/fleet/:id', auth, validate(UpdateAssetSchema), async (req, res) =
   try {
     const body = req.body as z.infer<typeof UpdateAssetSchema>;
     const id = req.params.id as string;
+
+    // Ownership check: only CentralRepoAdmin or the asset's current operator can update
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    if (!isAdmin) {
+      const [existing] = await db.select().from(assets).where(eq(assets.id, id)).limit(1);
+      if (!existing) {
+        res.status(404).json({ error: 'Asset not found' });
+        return;
+      }
+      if (existing.current_operator_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+    }
+
     const updates: Record<string, unknown> = { ...body, updated_at: new Date() };
     if (body.flight_hours != null) {
       updates.flight_hours = String(body.flight_hours);

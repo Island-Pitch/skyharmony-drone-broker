@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/connection.js';
 import { incidents } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
-import { auth } from '../middleware/auth.js';
+import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = Router();
@@ -23,8 +23,10 @@ const ResolveSchema = z.object({
 // GET /api/incidents
 router.get('/incidents', auth, async (req, res) => {
   try {
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
     const { severity, status } = req.query as Record<string, string | undefined>;
     const conditions = [];
+    if (!isAdmin) conditions.push(eq(incidents.reporter_id, req.user!.userId));
     if (severity) conditions.push(eq(incidents.severity, severity));
     if (status) conditions.push(eq(incidents.status, status));
 
@@ -54,7 +56,7 @@ router.post('/incidents', auth, validate(CreateIncidentSchema), async (req, res)
 });
 
 // POST /api/incidents/:id/resolve
-router.post('/incidents/:id/resolve', auth, validate(ResolveSchema), async (req, res) => {
+router.post('/incidents/:id/resolve', auth, requireRole('CentralRepoAdmin'), validate(ResolveSchema), async (req, res) => {
   try {
     const { resolution_notes } = req.body as z.infer<typeof ResolveSchema>;
 

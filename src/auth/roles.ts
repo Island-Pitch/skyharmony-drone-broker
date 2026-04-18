@@ -24,6 +24,8 @@ export enum Permission {
   ManifestRead = 'manifest:read',
   ManifestCreate = 'manifest:create',
   IncidentReport = 'incident:report',
+  IncidentResolve = 'incident:resolve',
+  BillingRead = 'billing:read',
 }
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
@@ -36,6 +38,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.FleetSummary,
     Permission.BookingCreate,
     Permission.BookingRead,
+    Permission.BillingRead,
     Permission.ManifestRead,
     Permission.IncidentReport,
   ],

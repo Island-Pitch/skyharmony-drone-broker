@@ -17,8 +17,11 @@ function KoruIcon({ size = 28, color = '#D4A843' }: { size?: number; color?: str
 }
 
 export function AppLayout({ routes }: AppLayoutProps) {
-  const sideRoutes = routes.filter((r) => r.nav.includes('side'));
-  const { user, role } = useAuth();
+  const { user, role, hasPermission } = useAuth();
+  // Only show nav items the user has permission for
+  const sideRoutes = routes.filter(
+    (r) => r.nav.includes('side') && (!r.permission || hasPermission(r.permission)),
+  );
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -62,7 +65,9 @@ export function AppLayout({ routes }: AppLayoutProps) {
               </div>
               <div className="sidebar-user-info">
                 <span className="sidebar-user-name">{user.name}</span>
-                <span className="sidebar-user-role">{role}</span>
+                <span className="sidebar-user-role">{
+                  { CentralRepoAdmin: 'Admin', OperatorAdmin: 'Fleet Owner', OperatorStaff: 'Operator', LogisticsStaff: 'Logistics', SystemAI: 'System' }[role] ?? role
+                }</span>
               </div>
             </div>
           )}

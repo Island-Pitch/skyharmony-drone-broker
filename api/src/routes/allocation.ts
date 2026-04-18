@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/connection.js';
 import { assets, bookings } from '../db/schema.js';
 import { eq, and, count } from 'drizzle-orm';
-import { auth } from '../middleware/auth.js';
+import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = Router();
@@ -13,7 +13,7 @@ const CheckSchema = z.object({
 });
 
 // POST /api/allocation/check
-router.post('/allocation/check', auth, validate(CheckSchema), async (req, res) => {
+router.post('/allocation/check', auth, requireRole('CentralRepoAdmin'), validate(CheckSchema), async (req, res) => {
   try {
     const { booking_id } = req.body as z.infer<typeof CheckSchema>;
 
@@ -62,7 +62,7 @@ router.post('/allocation/check', auth, validate(CheckSchema), async (req, res) =
 });
 
 // POST /api/allocation/allocate/:bookingId
-router.post('/allocation/allocate/:bookingId', auth, async (req, res) => {
+router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdmin'), async (req, res) => {
   try {
     const bookingId = req.params.bookingId as string;
 

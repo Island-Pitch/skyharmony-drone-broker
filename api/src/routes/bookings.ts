@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/connection.js';
 import { bookings } from '../db/schema.js';
 import { eq, count } from 'drizzle-orm';
-import { auth } from '../middleware/auth.js';
+import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = Router();
@@ -65,6 +65,11 @@ router.get('/bookings/:id', auth, async (req, res) => {
       res.status(404).json({ error: 'Booking not found' });
       return;
     }
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    if (!isAdmin && booking.operator_id !== req.user!.userId) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
     res.json({ data: booking });
   } catch (err) {
     console.error('Booking get error:', err);
@@ -76,8 +81,12 @@ router.get('/bookings/:id', auth, async (req, res) => {
 router.post('/bookings', auth, validate(CreateBookingSchema), async (req, res) => {
   try {
     const body = req.body as z.infer<typeof CreateBookingSchema>;
+    // Non-admins must use their own userId as operator_id
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    const operator_id = isAdmin ? body.operator_id : req.user!.userId;
     const [booking] = await db.insert(bookings).values({
       ...body,
+      operator_id,
       show_date: new Date(body.show_date),
       end_date: body.end_date ? new Date(body.end_date) : null,
       status: 'pending',
@@ -94,11 +103,26 @@ router.post('/bookings', auth, validate(CreateBookingSchema), async (req, res) =
 router.patch('/bookings/:id', auth, validate(UpdateBookingSchema), async (req, res) => {
   try {
     const body = req.body as z.infer<typeof UpdateBookingSchema>;
+    const id = req.params.id as string;
+
+    // Ownership check: only CentralRepoAdmin or the booking's operator can update
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    if (!isAdmin) {
+      const [existing] = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
+      if (!existing) {
+        res.status(404).json({ error: 'Booking not found' });
+        return;
+      }
+      if (existing.operator_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+    }
+
     const updates: Record<string, unknown> = { ...body, updated_at: new Date() };
     if (body.show_date) updates.show_date = new Date(body.show_date);
     if (body.end_date) updates.end_date = new Date(body.end_date);
 
-    const id = req.params.id as string;
     const [booking] = await db
       .update(bookings)
       .set(updates)
@@ -117,7 +141,7 @@ router.patch('/bookings/:id', auth, validate(UpdateBookingSchema), async (req, r
 });
 
 // POST /api/bookings/:id/transition
-router.post('/bookings/:id/transition', auth, validate(TransitionSchema), async (req, res) => {
+router.post('/bookings/:id/transition', auth, requireRole('CentralRepoAdmin'), validate(TransitionSchema), async (req, res) => {
   try {
     const { status: newStatus } = req.body as z.infer<typeof TransitionSchema>;
 

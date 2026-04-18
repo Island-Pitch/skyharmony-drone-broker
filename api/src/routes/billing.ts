@@ -12,16 +12,19 @@ const STANDBY_FEE_PER_DRONE = 150;     // per drone for standby fleet
 const INSURANCE_RATE = 0.07;            // 7% of allocation fees
 
 // GET /api/billing/summary
-router.get('/billing/summary', auth, async (_req, res) => {
+router.get('/billing/summary', auth, async (req, res) => {
   try {
-    // Get all bookings with their drone counts
+    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    const scopeFilter = isAdmin ? undefined : eq(bookings.operator_id, req.user!.userId);
+
+    // Get bookings (scoped to operator for non-admins)
     const allBookings = await db.select({
       id: bookings.id,
       operator_id: bookings.operator_id,
       operator_name: bookings.operator_name,
       drone_count: bookings.drone_count,
       status: bookings.status,
-    }).from(bookings);
+    }).from(bookings).where(scopeFilter);
 
     // Calculate revenue from allocated/confirmed/completed bookings
     const billableBookings = allBookings.filter(
