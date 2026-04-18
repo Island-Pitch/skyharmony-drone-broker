@@ -23,5 +23,6 @@ export const appRoutes: AppRoute[] = [
   { path: 'telemetry', label: 'Telemetry', icon: 'activity', nav: ['side', 'mobile'], permission: Permission.FleetSummary },
   { path: 'missions', label: 'Missions', icon: 'map', nav: ['side', 'top', 'mobile'] },
   { path: 'marketplace', label: 'Marketplace', icon: 'shopping-bag', nav: ['side', 'top', 'mobile'] },
+  { path: 'sponsors', label: 'Sponsors', icon: 'star', nav: ['side', 'mobile'], permission: Permission.BookingRead },
   { path: 'operator/dashboard', label: 'Operator Dashboard', icon: 'grid', nav: [] },
 ];

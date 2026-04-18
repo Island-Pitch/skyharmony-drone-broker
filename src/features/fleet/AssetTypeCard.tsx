@@ -10,6 +10,9 @@ const TYPE_ICON_MAP: Record<string, string> = {
   antenna_array: 'antenna',
   ground_control: 'monitor',
   rtk_station: 'satellite',
+  fixed_wing: 'plane',
+  helicopter: 'helicopter',
+  pyrodrone: 'pyrodrone',
 };
 
 /** Formats an asset type name for display (e.g. "base_station" -> "Base Station"). */

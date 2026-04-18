@@ -1,5 +1,5 @@
 import { db, pool } from './connection.js';
-import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements } from './schema.js';
+import { users, assetTypes, assets, bookings, invoices, manifests, transportLegs, maintenanceRules, maintenanceTickets, settlements, sponsors } from './schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
@@ -88,6 +88,9 @@ async function seed() {
     { id: '00000000-0000-4000-8000-000000000006', name: 'antenna_array', description: 'Multi-channel antenna array for extended range' },
     { id: '00000000-0000-4000-8000-000000000007', name: 'ground_control', description: 'Ground control station with multi-drone management' },
     { id: '00000000-0000-4000-8000-000000000008', name: 'rtk_station', description: 'Real-time kinematic positioning station' },
+    { id: '00000000-0000-4000-8000-000000000009', name: 'fixed_wing', description: 'Fixed-wing aircraft for aerial coordination' },
+    { id: '00000000-0000-4000-8000-00000000000a', name: 'helicopter', description: 'Rotary-wing aircraft for aerial operations' },
+    { id: '00000000-0000-4000-8000-00000000000b', name: 'pyrodrone', description: 'Pyrotechnic-equipped drone for aerial fireworks' },
   ];
   for (const t of typeRows) {
     await db.insert(assetTypes).values(t).onConflictDoNothing();
@@ -289,6 +292,53 @@ async function seed() {
   }
   await db.insert(assets).values(rtkRows).onConflictDoNothing();
   console.log('  Inserted 5 RTK stations');
+
+  // 6f. Fixed-wing aircraft (5)
+  const fwModels = ['Cessna 172', 'Piper Cherokee', 'Beechcraft Bonanza', 'Cirrus SR22', 'Diamond DA40'];
+  const fwRows: (typeof assets.$inferInsert)[] = [];
+  for (let i = 1; i <= 5; i++) {
+    fwRows.push({
+      id: crypto.randomUUID(), asset_type_id: typeRows[8]!.id,
+      serial_number: `FW-${String(i).padStart(3, '0')}`,
+      manufacturer: fwModels[i - 1]!.split(' ')[0]!, model: fwModels[i - 1]!,
+      status: 'available',
+      typed_attributes: { tail_number: `N${1000 + i}SH`, airframe_hours: 500 + Math.floor(rand() * 3000), engine_hours: 300 + Math.floor(rand() * 2000), ifr_certified: i <= 3, seats: i <= 2 ? 4 : 6, range_nm: 400 + Math.floor(rand() * 600) },
+      current_operator_id: null, parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(fwRows).onConflictDoNothing();
+  console.log('  Inserted 5 fixed-wing aircraft');
+
+  // 6g. Helicopters (3)
+  const heliNames = ['Bell 206', 'Robinson R44', 'Airbus H125'];
+  const hlRows: (typeof assets.$inferInsert)[] = [];
+  for (let i = 1; i <= 3; i++) {
+    hlRows.push({
+      id: crypto.randomUUID(), asset_type_id: typeRows[9]!.id,
+      serial_number: `HELI-${String(i).padStart(3, '0')}`,
+      manufacturer: heliNames[i - 1]!.split(' ')[0]!, model: heliNames[i - 1]!,
+      status: 'available',
+      typed_attributes: { tail_number: `N${2000 + i}SH`, rotor_hours: 200 + Math.floor(rand() * 1500), turbine_hours: 150 + Math.floor(rand() * 1200), max_payload_kg: 300 + Math.floor(rand() * 500) },
+      current_operator_id: null, parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(hlRows).onConflictDoNothing();
+  console.log('  Inserted 3 helicopters');
+
+  // 6h. Pyrodrones (20)
+  const pdRows: (typeof assets.$inferInsert)[] = [];
+  for (let i = 1; i <= 20; i++) {
+    pdRows.push({
+      id: crypto.randomUUID(), asset_type_id: typeRows[10]!.id,
+      serial_number: `PYRO-${String(i).padStart(3, '0')}`,
+      manufacturer: 'Verge Aero', model: 'PyroLauncher X1',
+      status: i <= 16 ? 'available' : 'maintenance',
+      typed_attributes: { pyro_capacity: 4 + Math.floor(rand() * 8), faa_waiver_number: `FAA-PY-${String(3000 + i)}`, max_altitude_ft: 200 + Math.floor(rand() * 300) },
+      current_operator_id: null, parent_asset_id: null,
+    });
+  }
+  await db.insert(assets).values(pdRows).onConflictDoNothing();
+  console.log('  Inserted 20 pyrodrones');
 
   // 7. Bookings
   const sampleBookings = [
@@ -648,6 +698,17 @@ async function seed() {
 
   await db.insert(settlements).values(settlementRows).onConflictDoNothing();
   console.log(`  Inserted ${settlementRows.length} settlements`);
+
+  // 11. Sponsors
+  const sponsorRows = [
+    { id: '00000000-0000-4000-8000-e00000000001', name: 'Farmers & Merchants Bank', logo_url: null, campaign_tag: 'community-banking', contact_email: 'partnerships@fmb.com' },
+    { id: '00000000-0000-4000-8000-e00000000002', name: 'City of Seal Beach', logo_url: null, campaign_tag: 'civic-pride', contact_email: 'events@sealbeachca.gov' },
+    { id: '00000000-0000-4000-8000-e00000000003', name: 'Verge Aero', logo_url: null, campaign_tag: 'drone-innovation', contact_email: 'marketing@vergeaero.com' },
+  ];
+  for (const s of sponsorRows) {
+    await db.insert(sponsors).values(s).onConflictDoNothing();
+  }
+  console.log(`  Inserted ${sponsorRows.length} sponsors`);
 
   console.log('Seed complete!');
   await pool.end();

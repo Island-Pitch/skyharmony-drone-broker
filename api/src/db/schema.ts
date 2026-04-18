@@ -237,6 +237,30 @@ export const settlements = pgTable('settlements', {
 });
 
 /* ------------------------------------------------------------------ */
+/*  sponsors                                                           */
+/* ------------------------------------------------------------------ */
+export const sponsors = pgTable('sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar('name', { length: 255 }).notNull(),
+  logo_url: text('logo_url'),
+  campaign_tag: varchar('campaign_tag', { length: 100 }),
+  contact_email: varchar('contact_email', { length: 255 }),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+/* ------------------------------------------------------------------ */
+/*  booking_sponsors                                                   */
+/* ------------------------------------------------------------------ */
+export const bookingSponsors = pgTable('booking_sponsors', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  booking_id: uuid('booking_id').references(() => bookings.id).notNull(),
+  sponsor_id: uuid('sponsor_id').references(() => sponsors.id).notNull(),
+  campaign_name: varchar('campaign_name', { length: 255 }),
+  notes: text('notes'),
+});
+
+/* ------------------------------------------------------------------ */
 /*  telemetry_syncs                                                    */
 /* ------------------------------------------------------------------ */
 export const telemetrySyncs = pgTable('telemetry_syncs', {
