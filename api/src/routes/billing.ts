@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/connection.js';
 import { bookings, users } from '../db/schema.js';
 import { eq, sql, count } from 'drizzle-orm';
-import { auth } from '../middleware/auth.js';
+import { auth, requireRole } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -12,7 +12,7 @@ const STANDBY_FEE_PER_DRONE = 150;     // per drone for standby fleet
 const INSURANCE_RATE = 0.07;            // 7% of allocation fees
 
 // GET /api/billing/summary
-router.get('/billing/summary', auth, async (req, res) => {
+router.get('/billing/summary', auth, requireRole('CentralRepoAdmin', 'OperatorAdmin'), async (req, res) => {
   try {
     const isAdmin = req.user!.role === 'CentralRepoAdmin';
     const scopeFilter = isAdmin ? undefined : eq(bookings.operator_id, req.user!.userId);

@@ -2,11 +2,16 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../db/connection.js';
 import { assets, assetTypes } from '../db/schema.js';
-import { eq, ilike, and, or, sql, count } from 'drizzle-orm';
+import { eq, and, or, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
 const router = Router();
+
+/** Escape `%`, `_`, and `\` for use in SQL LIKE/ILIKE patterns (PostgreSQL ESCAPE '\\'). */
+function escapeLikePattern(input: string): string {
+  return input.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
 
 const CreateAssetSchema = z.object({
   asset_type_id: z.string().uuid(),
@@ -114,11 +119,12 @@ router.get('/fleet', auth, async (req, res) => {
     if (type) conditions.push(eq(assets.asset_type_id, type));
     if (status) conditions.push(eq(assets.status, status));
     if (search) {
+      const pattern = `%${escapeLikePattern(search)}%`;
       conditions.push(
         or(
-          ilike(assets.serial_number, `%${search}%`),
-          ilike(assets.manufacturer, `%${search}%`),
-          ilike(assets.model, `%${search}%`),
+          sql`${assets.serial_number} ILIKE ${pattern} ESCAPE '\\'`,
+          sql`${assets.manufacturer} ILIKE ${pattern} ESCAPE '\\'`,
+          sql`${assets.model} ILIKE ${pattern} ESCAPE '\\'`,
         )!,
       );
     }

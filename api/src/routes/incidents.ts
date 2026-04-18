@@ -43,18 +43,22 @@ router.get('/incidents', auth, async (req, res) => {
 router.post('/incidents', auth, validate(CreateIncidentSchema), async (req, res) => {
   try {
     const body = req.body as z.infer<typeof CreateIncidentSchema>;
-    const [incident] = await db.insert(incidents).values({
-      ...body,
-      reporter_id: req.user!.userId,
-      status: 'open',
-    }).returning();
+    const incident = await db.transaction(async (tx) => {
+      const [created] = await tx.insert(incidents).values({
+        ...body,
+        reporter_id: req.user!.userId,
+        status: 'open',
+      }).returning();
 
-    if (body.severity === 'critical') {
-      await db
-        .update(assets)
-        .set({ status: 'maintenance', updated_at: new Date() })
-        .where(eq(assets.id, body.asset_id));
-    }
+      if (body.severity === 'critical') {
+        await tx
+          .update(assets)
+          .set({ status: 'maintenance', updated_at: new Date() })
+          .where(eq(assets.id, body.asset_id));
+      }
+
+      return created;
+    });
 
     res.status(201).json({ data: incident });
   } catch (err) {
