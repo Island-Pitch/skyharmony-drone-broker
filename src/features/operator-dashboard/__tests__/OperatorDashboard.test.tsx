@@ -33,26 +33,49 @@ describe('OperatorDashboard', () => {
     });
   });
 
-  it('shows operator dashboard heading', async () => {
+  it('shows welcome heading', async () => {
     renderOperatorDashboard();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /operator dashboard/i })).toBeInTheDocument();
+      expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
     });
   });
 
-  it('shows simplified stats', async () => {
+  it('shows hero stat cards', async () => {
     renderOperatorDashboard();
     await waitFor(() => {
-      expect(screen.getByText(/available drones/i)).toBeInTheDocument();
-      expect(screen.getByText(/your bookings/i)).toBeInTheDocument();
-      expect(screen.getByText(/utilization/i)).toBeInTheDocument();
+      expect(screen.getByText(/my fleet/i)).toBeInTheDocument();
+      expect(screen.getByText(/active shows/i)).toBeInTheDocument();
+      expect(screen.getByText(/this month revenue/i)).toBeInTheDocument();
+      expect(screen.getByText(/outstanding balance/i)).toBeInTheDocument();
     });
   });
 
-  it('shows active bookings table', async () => {
+  it('shows upcoming shows section', async () => {
     renderOperatorDashboard();
     await waitFor(() => {
-      expect(screen.getByText(/your active bookings/i)).toBeInTheDocument();
+      expect(screen.getByText(/upcoming shows/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows fleet health section', async () => {
+    renderOperatorDashboard();
+    await waitFor(() => {
+      expect(screen.getByText(/fleet health/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows recent invoices section', async () => {
+    renderOperatorDashboard();
+    await waitFor(() => {
+      expect(screen.getByText(/recent invoices/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows team section', async () => {
+    renderOperatorDashboard();
+    await waitFor(() => {
+      const teamHeadings = screen.getAllByRole('heading', { name: /team/i });
+      expect(teamHeadings.length).toBeGreaterThan(0);
     });
   });
 });
