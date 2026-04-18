@@ -48,8 +48,10 @@ interface ApiResponse<T> {
 
 async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: { message: res.statusText } }));
-    throw new Error(body.error?.message ?? `API error: ${res.status}`);
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    const err = (body as { error?: string | { message?: string } }).error;
+    const message = typeof err === 'string' ? err : err?.message;
+    throw new Error(message ?? `API error: ${res.status}`);
   }
   return res.json();
 }
