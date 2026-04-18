@@ -30,6 +30,7 @@ function createMockContext(assets: Asset[], scannedAssetIds: string[] = []): Dat
     auditService: {} as DataContextValue['auditService'],
     bookingRepo: {} as DataContextValue['bookingRepo'],
     bookingService: {} as DataContextValue['bookingService'],
+    incidentService: {} as DataContextValue['incidentService'],
     scanService: {
       getCustodyHistory: vi.fn().mockImplementation((assetId: string) => {
         if (scannedAssetIds.includes(assetId)) {
