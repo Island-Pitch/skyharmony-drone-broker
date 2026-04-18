@@ -82,51 +82,58 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
       return;
     }
 
-    // Find available drones
     const droneTypeId = '00000000-0000-4000-8000-000000000001';
-    const availableDrones = await db
-      .select()
-      .from(assets)
-      .where(
-        and(
-          eq(assets.asset_type_id, droneTypeId),
-          eq(assets.status, 'available'),
-        ),
-      )
-      .limit(booking.drone_count);
 
-    if (availableDrones.length < booking.drone_count) {
+    const result = await db.transaction(async (tx) => {
+      const availableDrones = await tx
+        .select()
+        .from(assets)
+        .where(
+          and(
+            eq(assets.asset_type_id, droneTypeId),
+            eq(assets.status, 'available'),
+          ),
+        )
+        .limit(booking.drone_count)
+        .for('update');
+
+      if (availableDrones.length < booking.drone_count) {
+        return { ok: false as const, found: availableDrones.length };
+      }
+
+      const allocatedIds = availableDrones.map((d) => d.id);
+
+      for (const droneId of allocatedIds) {
+        await tx
+          .update(assets)
+          .set({ status: 'allocated', updated_at: new Date() })
+          .where(eq(assets.id, droneId));
+      }
+
+      const [updated] = await tx
+        .update(bookings)
+        .set({
+          status: 'allocated',
+          allocated_assets: allocatedIds,
+          updated_at: new Date(),
+        })
+        .where(eq(bookings.id, bookingId))
+        .returning();
+
+      return { ok: true as const, booking: updated, allocated_count: allocatedIds.length };
+    });
+
+    if (!result.ok) {
       res.status(422).json({
-        error: `Not enough drones available. Need ${booking.drone_count}, found ${availableDrones.length}`,
+        error: `Not enough drones available. Need ${booking.drone_count}, found ${result.found}`,
       });
       return;
     }
 
-    const allocatedIds = availableDrones.map((d) => d.id);
-
-    // Mark drones as allocated
-    for (const droneId of allocatedIds) {
-      await db
-        .update(assets)
-        .set({ status: 'allocated', updated_at: new Date() })
-        .where(eq(assets.id, droneId));
-    }
-
-    // Update booking
-    const [updated] = await db
-      .update(bookings)
-      .set({
-        status: 'allocated',
-        allocated_assets: allocatedIds,
-        updated_at: new Date(),
-      })
-      .where(eq(bookings.id, bookingId))
-      .returning();
-
     res.json({
       data: {
-        booking: updated,
-        allocated_count: allocatedIds.length,
+        booking: result.booking,
+        allocated_count: result.allocated_count,
       },
     });
   } catch (err) {

@@ -13,7 +13,6 @@ const SignupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().min(1),
-  role: z.enum(['CentralRepoAdmin', 'OperatorAdmin', 'OperatorStaff', 'LogisticsStaff', 'SystemAI']).optional(),
 });
 
 const LoginSchema = z.object({
@@ -23,7 +22,7 @@ const LoginSchema = z.object({
 
 router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
   try {
-    const { email, password, name, role } = req.body as z.infer<typeof SignupSchema>;
+    const { email, password, name } = req.body as z.infer<typeof SignupSchema>;
 
     const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing.length > 0) {
@@ -36,7 +35,7 @@ router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
       email,
       password_hash,
       name,
-      role: role ?? 'OperatorStaff',
+      role: 'OperatorStaff',
     }).returning();
 
     const token = signToken({ userId: user!.id, email: user!.email, role: user!.role });
@@ -91,6 +90,17 @@ const OnboardSchema = z.object({
 router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => {
   try {
     const { role, organization, region, fleet_size } = req.body as z.infer<typeof OnboardSchema>;
+
+    const [current] = await db.select().from(users).where(eq(users.id, req.user!.userId)).limit(1);
+    if (!current) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    if (role === 'CentralRepoAdmin' && current.role !== 'CentralRepoAdmin') {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+
     const [user] = await db.update(users)
       .set({ role, organization, region, fleet_size: fleet_size ?? 0, onboarded: 'true', updated_at: new Date() })
       .where(eq(users.id, req.user!.userId))

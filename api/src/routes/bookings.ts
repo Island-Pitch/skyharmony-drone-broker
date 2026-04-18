@@ -33,7 +33,6 @@ const UpdateBookingSchema = z.object({
   end_date: z.string().datetime().optional(),
   drone_count: z.number().int().positive().optional(),
   location: z.string().optional(),
-  status: z.enum(['pending', 'allocated', 'confirmed', 'completed', 'cancelled']).optional(),
   notes: z.string().optional(),
   allocated_assets: z.array(z.string().uuid()).optional(),
 });
@@ -65,7 +64,7 @@ router.get('/bookings/:id', auth, async (req, res) => {
       res.status(404).json({ error: 'Booking not found' });
       return;
     }
-    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    const isAdmin = ADMIN_ROLES.includes(req.user!.role);
     if (!isAdmin && booking.operator_id !== req.user!.userId) {
       res.status(403).json({ error: 'Forbidden' });
       return;
@@ -105,8 +104,8 @@ router.patch('/bookings/:id', auth, validate(UpdateBookingSchema), async (req, r
     const body = req.body as z.infer<typeof UpdateBookingSchema>;
     const id = req.params.id as string;
 
-    // Ownership check: only CentralRepoAdmin or the booking's operator can update
-    const isAdmin = req.user!.role === 'CentralRepoAdmin';
+    // Ownership check: only admins (same policy as list) or the booking's operator can update
+    const isAdmin = ADMIN_ROLES.includes(req.user!.role);
     if (!isAdmin) {
       const [existing] = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1);
       if (!existing) {
