@@ -99,37 +99,52 @@ router.post('/scan/checkout', auth, validate(CheckoutSchema), async (req, res) =
 router.post('/scan/checkin', auth, validate(CheckinSchema), async (req, res) => {
   try {
     const { serial_number } = req.body as z.infer<typeof CheckinSchema>;
-    const [asset] = await db
-      .select()
-      .from(assets)
-      .where(eq(assets.serial_number, serial_number))
-      .limit(1);
 
-    if (!asset) {
-      res.status(404).json({ error: 'Asset not found' });
-      return;
-    }
+    const result = await db.transaction(async (tx) => {
+      const [asset] = await tx
+        .select()
+        .from(assets)
+        .where(eq(assets.serial_number, serial_number))
+        .for('update')
+        .limit(1);
 
-    if (asset.status === 'maintenance' || asset.status === 'retired') {
-      res.status(422).json({ error: `Cannot check in asset while status is '${asset.status}'` });
-      return;
-    }
+      if (!asset) {
+        return { ok: false as const, code: 'not_found' as const };
+      }
 
-    // Update asset status
-    const [updated] = await db
-      .update(assets)
-      .set({ status: 'available', current_operator_id: null, updated_at: new Date() })
-      .where(eq(assets.id, asset.id))
-      .returning();
+      if (asset.status === 'maintenance' || asset.status === 'retired') {
+        return {
+          ok: false as const,
+          code: 'blocked_status' as const,
+          status: asset.status,
+        };
+      }
 
-    // Record custody event
-    await db.insert(custodyEvents).values({
-      asset_id: asset.id,
-      action: 'check_in',
-      actor_id: req.user!.userId,
+      const [updated] = await tx
+        .update(assets)
+        .set({ status: 'available', current_operator_id: null, updated_at: new Date() })
+        .where(eq(assets.id, asset.id))
+        .returning();
+
+      await tx.insert(custodyEvents).values({
+        asset_id: asset.id,
+        action: 'check_in',
+        actor_id: req.user!.userId,
+      });
+
+      return { ok: true as const, data: updated };
     });
 
-    res.json({ data: updated });
+    if (!result.ok) {
+      if (result.code === 'not_found') {
+        res.status(404).json({ error: 'Asset not found' });
+        return;
+      }
+      res.status(422).json({ error: `Cannot check in asset while status is '${result.status}'` });
+      return;
+    }
+
+    res.json({ data: result.data });
   } catch (err) {
     console.error('Scan checkin error:', err);
     res.status(500).json({ error: 'Internal server error' });
