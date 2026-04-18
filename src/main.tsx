@@ -7,12 +7,12 @@ import './theme/global.css';
 // Redirect www.skyharmony.net → skyharmony.net
 if (location.hostname === 'www.skyharmony.net') {
   location.replace(`https://skyharmony.net${location.pathname}${location.search}${location.hash}`);
+} else {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>,
+  );
 }
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-);

@@ -24,7 +24,7 @@ export default defineConfig({
   },
   preview: {
     port: 3000,
-    allowedHosts: ['skyharmony.islandpitch.world', 'skyharmony.net'],
+    allowedHosts: ['skyharmony.islandpitch.world', 'skyharmony.net', 'www.skyharmony.net'],
     proxy: apiProxy,
   },
 });
