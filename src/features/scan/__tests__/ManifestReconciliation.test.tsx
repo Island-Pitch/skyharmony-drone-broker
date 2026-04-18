@@ -23,6 +23,7 @@ function makeAsset(serial: string): Asset {
 function createMockContext(assets: Asset[], scannedAssetIds: string[] = []): DataContextValue {
   return {
     assetRepo: {} as DataContextValue['assetRepo'],
+    allocationService: {} as DataContextValue['allocationService'],
     assetService: {
       listAssets: vi.fn().mockResolvedValue(assets),
     } as unknown as DataContextValue['assetService'],
