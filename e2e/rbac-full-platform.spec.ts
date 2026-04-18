@@ -78,13 +78,9 @@ test.describe('Public Pages', () => {
     await expect(page.getByText('Accessibility Statement')).toBeVisible();
   });
 
-  test('data sovereignty page loads if route exists', async ({ page }) => {
+  test('data sovereignty page loads', async ({ page }) => {
     await page.goto('/data-sovereignty');
-    // May be 404 if not yet deployed, or the actual page
-    const has404 = await page.getByText('404').isVisible().catch(() => false);
-    if (!has404) {
-      await expect(page.getByText('Data Sovereignty').first()).toBeVisible();
-    }
+    await expect(page.getByText('Data Sovereignty').first()).toBeVisible();
   });
 
   test('404 page renders for unknown routes', async ({ page }) => {
