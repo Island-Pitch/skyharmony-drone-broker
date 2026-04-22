@@ -122,14 +122,8 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       res.status(403).json({ error: 'Already onboarded' });
       return;
     }
-    if (role === 'CentralRepoAdmin' && current.role !== 'CentralRepoAdmin') {
-      res.status(403).json({ error: 'Insufficient permissions' });
-      return;
-    }
-    if (current.role !== 'CentralRepoAdmin' && role === 'OperatorAdmin') {
-      res.status(403).json({ error: 'Insufficient permissions' });
-      return;
-    }
+    // Demo mode: allow any role selection during onboarding
+    // In production, restrict CentralRepoAdmin and OperatorAdmin to invited users
 
     const [user] = await db.update(users)
       .set({ role, organization, region, fleet_size: fleet_size ?? 0, onboarded: 'true', updated_at: new Date() })
