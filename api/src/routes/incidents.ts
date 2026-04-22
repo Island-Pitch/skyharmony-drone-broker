@@ -5,6 +5,7 @@ import { incidents, assets } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -60,8 +61,20 @@ router.post('/incidents', auth, validate(CreateIncidentSchema), async (req, res)
       return created;
     });
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'incident_reported',
+      properties: {
+        incident_id: incident!.id,
+        asset_id: incident!.asset_id,
+        booking_id: incident!.booking_id,
+        severity: incident!.severity,
+      },
+    });
+
     res.status(201).json({ data: incident });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Incident create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -83,8 +96,20 @@ router.post('/incidents/:id/resolve', auth, requireRole('CentralRepoAdmin'), val
       res.status(404).json({ error: 'Incident not found' });
       return;
     }
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'incident_resolved',
+      properties: {
+        incident_id: incident.id,
+        asset_id: incident.asset_id,
+        severity: incident.severity,
+      },
+    });
+
     res.json({ data: incident });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Incident resolve error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

@@ -1,4 +1,5 @@
 import { apiPost, apiGet, setAuthToken, getAuthToken } from '@/data/repositories/http/apiClient';
+import posthog from '@/lib/posthog';
 import type { Role } from './roles';
 
 export interface AuthUser {
@@ -39,6 +40,8 @@ export async function getMe(): Promise<AuthUser | null> {
 }
 
 export function logout() {
+  posthog.capture('user_logged_out');
+  posthog.reset();
   setAuthToken(null);
 }
 

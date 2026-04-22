@@ -5,6 +5,7 @@ import { Permission } from '@/auth/roles';
 import { useIncidents } from '@/hooks/useIncidents';
 import { useAssets } from '@/hooks/useAssets';
 import type { IncidentSeverityValue } from '@/data/models/incident';
+import posthog from '@/lib/posthog';
 
 interface IncidentReportFormProps {
   prefilledAssetId?: string;
@@ -52,9 +53,16 @@ function IncidentReportFormInner({
         booking_id: prefilledBookingId,
         photo_url: photoUrl || undefined,
       });
+      posthog.capture('incident_form_submitted', {
+        incident_id: incident.id,
+        severity,
+        asset_id: assetId,
+        has_photo: !!photoUrl,
+      });
       setIncidentRef(incident.id);
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      posthog.captureException(err);
       setErrors({ submit: 'Failed to submit report' });
     }
   }

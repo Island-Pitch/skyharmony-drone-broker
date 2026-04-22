@@ -3,6 +3,7 @@ import { db } from '../db/connection.js';
 import { settlements, invoices, users } from '../db/schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -100,8 +101,20 @@ router.post(
         created.push(settlement);
       }
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'settlement_generated',
+        properties: {
+          period_start,
+          period_end,
+          settlement_count: created.length,
+          operator_count: operatorTotals.size,
+        },
+      });
+
       res.status(201).json({ data: created });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Settlement generation error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -224,8 +237,21 @@ router.post(
         .where(eq(settlements.id, id))
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'settlement_approved',
+        properties: {
+          settlement_id: updated!.id,
+          operator_id: updated!.operator_id,
+          net_amount: Number(updated!.net_amount),
+          period_start: updated!.period_start,
+          period_end: updated!.period_end,
+        },
+      });
+
       res.json({ data: updated });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Approve settlement error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -268,8 +294,20 @@ router.post(
         .where(eq(settlements.id, id))
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'settlement_paid',
+        properties: {
+          settlement_id: updated!.id,
+          operator_id: updated!.operator_id,
+          net_amount: Number(updated!.net_amount),
+          payment_reference: paymentReference,
+        },
+      });
+
       res.json({ data: updated });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Pay settlement error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

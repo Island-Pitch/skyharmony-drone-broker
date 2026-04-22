@@ -5,6 +5,7 @@ import { cooperativeTerms, auditEvents } from '../db/schema.js';
 import { desc, sql } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -125,8 +126,21 @@ router.post(
         }
       }
 
+      posthog.capture({
+        distinctId: userId,
+        event: 'cooperative_terms_updated',
+        properties: {
+          version: nextVersion,
+          brokerage_pct: body.brokerage_pct,
+          allocation_fee_per_drone: body.allocation_fee_per_drone,
+          insurance_pool_pct: body.insurance_pool_pct,
+          effective_date: body.effective_date,
+        },
+      });
+
       res.status(201).json({ data: newTerms });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Terms create error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

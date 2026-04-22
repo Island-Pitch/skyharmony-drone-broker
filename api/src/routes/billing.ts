@@ -3,6 +3,7 @@ import { db } from '../db/connection.js';
 import { bookings, users } from '../db/schema.js';
 import { eq, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -81,6 +82,7 @@ router.get('/billing/summary', auth, requireRole('CentralRepoAdmin', 'OperatorAd
       },
     });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Billing summary error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

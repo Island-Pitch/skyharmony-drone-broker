@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSettlements } from '@/hooks/useSettlements';
 import { SettlementDetail } from './SettlementDetail';
 import type { Settlement } from '@/hooks/useSettlements';
+import posthog from '@/lib/posthog';
 
 function formatCurrency(amount: number | string): string {
   return `$${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -121,7 +122,15 @@ export function SettlementsPage() {
               return (
                 <tr
                   key={s.id}
-                  onClick={() => setSelectedId(s.id)}
+                  onClick={() => {
+                    setSelectedId(s.id);
+                    posthog.capture('settlement_viewed', {
+                      settlement_id: s.id,
+                      status: s.status,
+                      operator_name: s.operator_name,
+                      net_amount: Number(s.net_amount),
+                    });
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <td>{s.operator_name ?? 'Unknown'}</td>

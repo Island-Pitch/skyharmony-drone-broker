@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MaintenanceTicket } from '@/hooks/useMaintenance';
+import posthog from '@/lib/posthog';
 
 interface TicketDetailProps {
   ticket: MaintenanceTicket;
@@ -38,6 +39,13 @@ export function TicketDetail({ ticket, onUpdate, onComplete, onClose }: TicketDe
         }
         await onUpdate(ticket.id, updates);
       }
+      posthog.capture('maintenance_ticket_advanced', {
+        ticket_id: ticket.id,
+        from_status: ticket.status,
+        to_status: nextStatus,
+        severity: ticket.severity,
+        ticket_type: ticket.ticket_type,
+      });
     } finally {
       setSaving(false);
     }

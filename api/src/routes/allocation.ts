@@ -5,6 +5,7 @@ import { assets, bookings } from '../db/schema.js';
 import { eq, and, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -142,6 +143,16 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
       return;
     }
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'drones_allocated',
+      properties: {
+        booking_id: bookingId,
+        allocated_count: result.allocated_count,
+        operator_id: result.booking?.operator_id,
+      },
+    });
+
     res.json({
       data: {
         booking: result.booking,
@@ -149,6 +160,7 @@ router.post('/allocation/allocate/:bookingId', auth, requireRole('CentralRepoAdm
       },
     });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Allocation allocate error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

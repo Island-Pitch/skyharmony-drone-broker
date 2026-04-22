@@ -1,4 +1,5 @@
 /** Shared HTTP client for all API calls. Handles JWT token and response envelope. */
+import posthog from '@/lib/posthog';
 
 /** Absolute API origin for cross-origin Docker/production (e.g. http://localhost:4000); empty uses same-origin /api. */
 export function getApiOrigin(): string {
@@ -75,6 +76,11 @@ export async function apiFetch<T>(
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
+
+  const sessionId = posthog?.get_session_id?.();
+  if (sessionId) headers['X-POSTHOG-SESSION-ID'] = sessionId;
+  const distinctId = posthog?.get_distinct_id?.();
+  if (distinctId) headers['X-POSTHOG-DISTINCT-ID'] = distinctId;
 
   const res = await fetch(apiUrl(`/api${path}`), { ...options, headers });
   return handleResponse<T>(res);

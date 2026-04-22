@@ -5,6 +5,7 @@ import { assets, custodyEvents } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { auth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -88,8 +89,19 @@ router.post('/scan/checkout', auth, validate(CheckoutSchema), async (req, res) =
       return;
     }
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'asset_checked_out',
+      properties: {
+        asset_id: result.data!.id,
+        serial_number,
+        booking_id: booking_id ?? null,
+      },
+    });
+
     res.json({ data: result.data });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Scan checkout error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -144,8 +156,18 @@ router.post('/scan/checkin', auth, validate(CheckinSchema), async (req, res) => 
       return;
     }
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'asset_checked_in',
+      properties: {
+        asset_id: result.data!.id,
+        serial_number,
+      },
+    });
+
     res.json({ data: result.data });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Scan checkin error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

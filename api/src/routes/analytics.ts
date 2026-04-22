@@ -6,6 +6,7 @@ import { assetBaselines, anomalies, telemetrySyncs, assets } from '../db/schema.
 import { eq, sql, count, and } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -142,6 +143,12 @@ router.post(
       const coveragePct =
         totalActive > 0 ? Math.round((totalBaselines / totalActive) * 1000) / 10 : 0;
 
+      posthog.capture({
+        distinctId: _req.user!.userId,
+        event: 'baselines_computed',
+        properties: { baselines_computed: baselinesComputed, fleet_coverage_pct: coveragePct },
+      });
+
       res.json({
         data: {
           baselines_computed: baselinesComputed,
@@ -150,6 +157,7 @@ router.post(
         },
       });
     } catch (err) {
+      posthog.captureException(err, _req.user?.userId);
       console.error('Compute baselines error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -301,10 +309,17 @@ router.post(
         }
       }
 
+      posthog.capture({
+        distinctId: _req.user!.userId,
+        event: 'anomalies_detected',
+        properties: { anomalies_created: anomaliesCreated.length },
+      });
+
       res.json({
         data: { anomalies_created: anomaliesCreated.length, anomalies: anomaliesCreated },
       });
     } catch (err) {
+      posthog.captureException(err, _req.user?.userId);
       console.error('Detect anomalies error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -404,8 +419,21 @@ router.post(
         res.status(404).json({ error: 'Anomaly not found' });
         return;
       }
+
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'anomaly_reviewed',
+        properties: {
+          anomaly_id: id,
+          decision: status,
+          anomaly_type: anomaly.anomaly_type,
+          asset_id: anomaly.asset_id,
+        },
+      });
+
       res.json({ data: anomaly });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Anomaly review error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

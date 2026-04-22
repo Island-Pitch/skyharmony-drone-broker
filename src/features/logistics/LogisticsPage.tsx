@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLogistics } from '@/hooks/useLogistics';
 import { ManifestDetail } from './ManifestDetail';
 import { RouteOptimizer } from './RouteOptimizer';
+import posthog from '@/lib/posthog';
 import type { Manifest } from '@/data/models/manifest';
 
 type LogisticsTab = 'manifests' | 'routes';
@@ -27,7 +28,14 @@ function ManifestRow({ manifest, onSelect }: { manifest: Manifest; onSelect: (id
 
   return (
     <tr
-      onClick={() => onSelect(manifest.id)}
+      onClick={() => {
+        posthog.capture('manifest_viewed', {
+          manifest_id: manifest.id,
+          status: manifest.status,
+          asset_count: Array.isArray(manifest.assets) ? manifest.assets.length : 0,
+        });
+        onSelect(manifest.id);
+      }}
       style={{ cursor: 'pointer' }}
     >
       <td style={{ padding: '0.6rem 0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>

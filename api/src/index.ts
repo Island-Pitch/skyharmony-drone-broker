@@ -1,5 +1,6 @@
-import express from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
+import posthog from './lib/posthog.js';
 
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
@@ -50,6 +51,14 @@ app.use('/api', analyticsRouter);
 app.use('/api', operatorRouter);
 app.use('/api', sponsorsRouter);
 app.use('/api', termsRouter);
+
+// Global error handler — catch anything that slips through route-level handlers
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  const distinctId = (req as any).user?.userId;
+  posthog.captureException(err, distinctId);
+  console.error('Unhandled API error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 app.listen(PORT, () => {
   console.log(`SkyHarmony API listening on port ${PORT}`);

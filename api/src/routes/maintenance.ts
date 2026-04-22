@@ -6,6 +6,7 @@ import { maintenanceRules, maintenanceTickets, assets } from '../db/schema.js';
 import { eq, and, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -54,8 +55,16 @@ router.post('/maintenance/rules', auth, requireRole('CentralRepoAdmin'), validat
   try {
     const body = req.body as z.infer<typeof CreateRuleSchema>;
     const [rule] = await db.insert(maintenanceRules).values(body).returning();
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'maintenance_rule_created',
+      properties: { rule_id: rule!.id, rule_name: body.rule_name, field: body.field, severity: body.severity },
+    });
+
     res.status(201).json({ data: rule });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Maintenance rule create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -133,8 +142,15 @@ router.post('/maintenance/evaluate', auth, requireRole('CentralRepoAdmin'), asyn
       }
     }
 
+    posthog.capture({
+      distinctId: _req.user!.userId,
+      event: 'maintenance_evaluated',
+      properties: { tickets_created: ticketsCreated.length, rules_evaluated: rules.length, assets_scanned: allAssets.length },
+    });
+
     res.json({ data: { tickets_created: ticketsCreated.length, tickets: ticketsCreated } });
   } catch (err) {
+    posthog.captureException(err, _req.user?.userId);
     console.error('Maintenance evaluate error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -255,6 +271,12 @@ router.post('/maintenance/tickets/:id/complete', auth, validate(z.object({
       res.status(404).json({ error: 'Ticket not found' });
       return;
     }
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'maintenance_ticket_completed',
+      properties: { ticket_id: id, asset_id: ticket.asset_id, severity: ticket.severity, ticket_type: ticket.ticket_type },
+    });
 
     // Set asset status back to available
     if (ticket.asset_id) {

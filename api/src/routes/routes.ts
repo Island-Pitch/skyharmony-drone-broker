@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { auth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 import {
   KNOWN_LOCATIONS,
   findLocation,
@@ -84,6 +85,7 @@ router.post('/routes/optimize', auth, validate(OptimizeSchema), async (req, res)
       },
     });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Route optimization error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

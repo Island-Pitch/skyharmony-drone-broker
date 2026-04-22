@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '@/auth/authService';
+import posthog from '@/lib/posthog';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -16,13 +17,21 @@ export function LoginPage() {
 
     try {
       const result = await login(email, password);
+      posthog.identify(result.user.id, {
+        email: result.user.email,
+        name: result.user.name,
+        role: result.user.role,
+      });
       if (result.user && result.user.onboarded !== 'true') {
         navigate('/onboarding');
       } else {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
+      const message = err instanceof Error ? err.message : 'Authentication failed';
+      setError(message);
+      posthog.capture('login_failed', { error: message });
+      posthog.captureException(err);
     } finally {
       setLoading(false);
     }

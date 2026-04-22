@@ -4,6 +4,7 @@ import { store } from '@/data/store';
 import { AssetTypeCard, TYPE_ICON_MAP, formatTypeName } from './AssetTypeCard';
 import { NavIcon } from '@/components/NavIcon';
 import type { Asset, AssetType } from '@/data/models/asset';
+import posthog from '@/lib/posthog';
 
 /** Renders a key-value pair from typed_attributes in a readable format. */
 function AttributeTag({ label, value }: { label: string; value: unknown }) {
@@ -155,9 +156,18 @@ export function Fleet() {
                         <button
                           type="button"
                           className="btn-expand"
-                          onClick={() =>
-                            setExpandedRow(isExpanded ? null : asset.id)
-                          }
+                          onClick={() => {
+                            const expanding = !isExpanded;
+                            setExpandedRow(expanding ? asset.id : null);
+                            if (expanding) {
+                              posthog.capture('asset_details_expanded', {
+                                asset_id: asset.id,
+                                asset_type: typeName,
+                                model: asset.model,
+                                status: asset.status,
+                              });
+                            }
+                          }}
                           aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
                         >
                           {isExpanded ? 'Hide' : 'View'}
