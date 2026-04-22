@@ -76,10 +76,14 @@
       }
     }
     </script>
-    <script src="https://input.islandpitch.bot/sdk.js"
-            data-project="SHD"
-            data-survey-id="019db731-198d-0000-6929-7c5fdef8aa8d"
-            data-position="bottom-right"></script>
+    <script src="https://input.islandpitch.bot/sdk.js"></script>
+    <script>
+      window.IPFeedback && window.IPFeedback.init({
+        project: "SHD",
+        surveyId: "019db731-198d-0000-6929-7c5fdef8aa8d",
+        position: "bottom-right"
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
