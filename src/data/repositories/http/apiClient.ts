@@ -53,12 +53,24 @@ interface ApiResponse<T> {
   };
 }
 
+export class ApiError extends Error {
+  code?: string;
+  status: number;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
 async function handleResponse<T>(res: Response): Promise<ApiResponse<T>> {
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    const err = (body as { error?: string | { message?: string } }).error;
+    const parsed = body as { error?: string | { message?: string }; code?: string };
+    const err = parsed.error;
     const message = typeof err === 'string' ? err : err?.message;
-    throw new Error(message ?? `API error: ${res.status}`);
+    throw new ApiError(message ?? `API error: ${res.status}`, res.status, parsed.code);
   }
   return res.json();
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signup, getMe, type AuthUser } from '@/auth/authService';
-import { apiPost, setAuthToken } from '@/data/repositories/http/apiClient';
+import { useNavigate, Link } from 'react-router-dom';
+import { signup, getMe, logout, type AuthUser } from '@/auth/authService';
+import { apiPost, setAuthToken, ApiError } from '@/data/repositories/http/apiClient';
 import posthog from '@/lib/posthog';
 
 interface SignupData {
@@ -72,6 +72,7 @@ export function OnboardingWizard() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailTaken, setEmailTaken] = useState(false);
   /** Logged-in user who already has an account (e.g. invited team member) — skip signup and only call /auth/onboard. */
   const [sessionUser, setSessionUser] = useState<AuthUser | null>(null);
 
@@ -116,7 +117,13 @@ export function OnboardingWizard() {
       setAuthToken(res.data.token);
       setStep(totalSteps);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      if (err instanceof ApiError && err.code === 'EMAIL_TAKEN') {
+        setEmailTaken(true);
+        setError('');
+      } else {
+        setEmailTaken(false);
+        setError(err instanceof Error ? err.message : 'Failed to create account');
+      }
     } finally {
       setLoading(false);
     }
@@ -210,15 +217,30 @@ export function OnboardingWizard() {
               </label>
               <label>
                 <span>Email</span>
-                <input type="email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="you@company.com" required readOnly={completingExistingAccount} />
+                <input type="email" value={data.email} onChange={(e) => { setData({ ...data, email: e.target.value }); setEmailTaken(false); }} placeholder="you@company.com" required readOnly={completingExistingAccount} />
               </label>
+              {completingExistingAccount && (
+                <p className="onboarding-session-hint">
+                  Signed in as <strong>{data.email}</strong>.{' '}
+                  <button type="button" className="login-link" onClick={() => { logout(); setSessionUser(null); setData((prev) => ({ ...prev, email: '', password: '' })); }}>
+                    Use a different account
+                  </button>
+                </p>
+              )}
               {!completingExistingAccount && (
                 <label>
                   <span>Password</span>
                   <input type="password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} placeholder="Minimum 6 characters" required minLength={6} />
                 </label>
               )}
-              {error && !showFleetStep && <p className="login-error">{error}</p>}
+              {emailTaken && !showFleetStep && (
+                <div className="login-error">
+                  This email is already registered.{' '}
+                  <Link to="/login" className="login-link">Sign in instead</Link>{' '}
+                  or use a different email above.
+                </div>
+              )}
+              {error && !emailTaken && !showFleetStep && <p className="login-error">{error}</p>}
               <div className="onboarding-actions">
                 <button type="button" className="btn-secondary" onClick={() => setStep(2)}>Back</button>
                 <button
@@ -253,10 +275,17 @@ export function OnboardingWizard() {
                   <button key={n} type="button" className={`fleet-hint-btn ${data.fleet_size === n ? 'active' : ''}`} onClick={() => setData({ ...data, fleet_size: n })}>{n}</button>
                 ))}
               </div>
-              {error && <p className="login-error">{error}</p>}
+              {emailTaken && (
+                <div className="login-error">
+                  This email is already registered.{' '}
+                  <Link to="/login" className="login-link">Sign in instead</Link>{' '}
+                  or <button type="button" className="login-link" onClick={() => setStep(3)}>go back</button> to use a different email.
+                </div>
+              )}
+              {error && !emailTaken && <p className="login-error">{error}</p>}
               <div className="onboarding-actions">
                 <button type="button" className="btn-secondary" onClick={() => setStep(3)}>Back</button>
-                <button type="submit" className="btn-primary" disabled={loading}>
+                <button type="submit" className="btn-primary" disabled={loading || emailTaken}>
                   {loading ? 'Creating...' : 'Create Account'}
                 </button>
               </div>

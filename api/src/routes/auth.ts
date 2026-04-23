@@ -27,7 +27,7 @@ router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
 
     const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing.length > 0) {
-      res.status(409).json({ error: 'Email already registered' });
+      res.status(409).json({ error: 'Email already registered', code: 'EMAIL_TAKEN' });
       return;
     }
 
