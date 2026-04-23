@@ -11,12 +11,7 @@ if (apiKey) {
     capture_pageleave: true,
     autocapture: true,
     session_recording: {
-      maskAllInputs: false,
-      maskInputFn: (text, element) => {
-        const type = element?.getAttribute('type');
-        if (type === 'password') return '*'.repeat(text.length);
-        return text;
-      },
+      maskAllInputs: true,
     },
   });
 }

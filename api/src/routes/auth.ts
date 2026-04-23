@@ -122,8 +122,12 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       res.status(403).json({ error: 'Already onboarded' });
       return;
     }
-    // Demo mode: allow any role selection during onboarding
-    // In production, restrict CentralRepoAdmin and OperatorAdmin to invited users
+    const isPrivilegedRole = role === 'CentralRepoAdmin' || role === 'OperatorAdmin';
+    const allowSelfAssignPrivilegedRoles = process.env.ALLOW_SELF_ASSIGN_PRIVILEGED_ROLES === 'true';
+    if (isPrivilegedRole && !allowSelfAssignPrivilegedRoles) {
+      res.status(403).json({ error: 'Role not permitted' });
+      return;
+    }
 
     const [user] = await db.update(users)
       .set({ role, organization, region, fleet_size: fleet_size ?? 0, onboarded: 'true', updated_at: new Date() })
