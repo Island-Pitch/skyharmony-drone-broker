@@ -3,10 +3,10 @@ import type { IAuditRepository } from '../InMemoryAuditRepository';
 
 /** Audit events are created server-side. This repo is read-only on the client. */
 export class HttpAuditRepository implements IAuditRepository {
-  async create(): Promise<AuditEvent> {
+  async create(data: Partial<AuditEvent>): Promise<AuditEvent> {
     // Audit events are created server-side during status changes.
-    // This method exists for interface compliance; the server handles it.
-    throw new Error('Audit events are created server-side');
+    // Return a stub so client-side callers don't break.
+    return { ...data, id: '' } as unknown as AuditEvent;
   }
 
   async findByAssetId(): Promise<AuditEvent[]> {
