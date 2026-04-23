@@ -25,6 +25,8 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
     setCameraActive(false);
   }, []);
 
+  const [pendingStart, setPendingStart] = useState(false);
+
   const startCamera = useCallback(async () => {
     setCameraError('');
     if (!containerRef.current) return;
@@ -35,28 +37,9 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
       // Stop the temporary stream — html5-qrcode will open its own
       stream.getTracks().forEach((t) => t.stop());
 
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode('qr-reader');
-      }
-
-      await scannerRef.current.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1,
-        },
-        (decodedText) => {
-          const serial = decodedText.replace(/.*serial[=:]?/i, '').trim();
-          onScan(serial || decodedText);
-          stopCamera();
-        },
-        () => {
-          // QR scan error (no QR found in frame) — ignore
-        },
-      );
-
+      // Show the qr-reader div first, then start scanner after React renders it
       setCameraActive(true);
+      setPendingStart(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setCameraError(msg.includes('NotAllowedError') || msg.includes('Permission denied')
@@ -66,7 +49,35 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
           : `Camera error: ${msg}`
       );
     }
-  }, [onScan, stopCamera]);
+  }, []);
+
+  // Start the scanner after the qr-reader div is rendered
+  useEffect(() => {
+    if (!pendingStart || !cameraActive) return;
+    setPendingStart(false);
+
+    (async () => {
+      try {
+        if (!scannerRef.current) {
+          scannerRef.current = new Html5Qrcode('qr-reader');
+        }
+        await scannerRef.current.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
+          (decodedText) => {
+            const serial = decodedText.replace(/.*serial[=:]?/i, '').trim();
+            onScan(serial || decodedText);
+            stopCamera();
+          },
+          () => {},
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setCameraError(`Camera error: ${msg}`);
+        setCameraActive(false);
+      }
+    })();
+  }, [pendingStart, cameraActive, onScan, stopCamera]);
 
   useEffect(() => {
     return () => {
