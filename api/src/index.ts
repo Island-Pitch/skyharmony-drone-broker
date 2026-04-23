@@ -19,6 +19,8 @@ import analyticsRouter from './routes/analytics.js';
 import operatorRouter from './routes/operator.js';
 import sponsorsRouter from './routes/sponsors.js';
 import termsRouter from './routes/terms.js';
+import forecastingRouter from './routes/forecasting.js';
+import routesRouter from './routes/routes.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -51,6 +53,8 @@ app.use('/api', analyticsRouter);
 app.use('/api', operatorRouter);
 app.use('/api', sponsorsRouter);
 app.use('/api', termsRouter);
+app.use('/api', forecastingRouter);
+app.use('/api', routesRouter);
 
 // Global error handler — catch anything that slips through route-level handlers
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
