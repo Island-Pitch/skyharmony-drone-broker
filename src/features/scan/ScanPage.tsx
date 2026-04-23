@@ -3,6 +3,7 @@ import { RouteGuard } from '@/auth/RouteGuard';
 import { useAuth } from '@/auth/useAuth';
 import { Permission } from '@/auth/roles';
 import { useScan } from '@/hooks/useScan';
+import posthog from '@/lib/posthog';
 import { QRScanner } from './QRScanner';
 import { ScanResult } from './ScanResult';
 import { ManifestReconciliation } from './ManifestReconciliation';
@@ -34,6 +35,7 @@ function ScanPageContent() {
 
   const handleScan = useCallback(
     (serial: string) => {
+      posthog.capture('qr_scanned', { serial_number: serial });
       scan(serial);
     },
     [scan],
@@ -41,12 +43,22 @@ function ScanPageContent() {
 
   const handleCheckOut = useCallback(() => {
     if (scanResult) {
+      posthog.capture('scan_check_out', {
+        asset_id: scanResult.id,
+        serial_number: scanResult.serial_number,
+        status: scanResult.status,
+      });
       checkOut(scanResult.serial_number, user.id);
     }
   }, [scanResult, checkOut, user.id]);
 
   const handleCheckIn = useCallback(() => {
     if (scanResult) {
+      posthog.capture('scan_check_in', {
+        asset_id: scanResult.id,
+        serial_number: scanResult.serial_number,
+        status: scanResult.status,
+      });
       checkIn(scanResult.serial_number, user.id);
     }
   }, [scanResult, checkIn, user.id]);

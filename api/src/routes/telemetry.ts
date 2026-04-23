@@ -6,6 +6,7 @@ import { telemetrySyncs, assets, auditEvents } from '../db/schema.js';
 import { eq, sql, count, gte } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -111,8 +112,18 @@ router.post('/telemetry/sync', auth, requireRole('CentralRepoAdmin', 'SystemAI')
       results.push({ serial_number: item.serial_number, synced: true });
     }
 
-    res.json({ data: { synced: results.filter((r) => r.synced).length, failed: results.filter((r) => !r.synced).length, results } });
+    const syncedCount = results.filter((r) => r.synced).length;
+    const failedCount = results.filter((r) => !r.synced).length;
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'telemetry_synced',
+      properties: { source, items_total: items.length, synced: syncedCount, failed: failedCount },
+    });
+
+    res.json({ data: { synced: syncedCount, failed: failedCount, results } });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Telemetry sync error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -200,6 +211,13 @@ router.post('/telemetry/simulate', auth, requireRole('CentralRepoAdmin'), async 
     }
 
     const faulted = results.filter((r) => r.fault_codes.length > 0);
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'telemetry_simulated',
+      properties: { assets_simulated: results.length, faulted_count: faulted.length },
+    });
+
     res.json({
       data: {
         synced: results.length,
@@ -208,6 +226,7 @@ router.post('/telemetry/simulate', auth, requireRole('CentralRepoAdmin'), async 
       },
     });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Telemetry simulate error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

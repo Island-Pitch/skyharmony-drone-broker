@@ -3,6 +3,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { RouteGuard } from '@/auth/RouteGuard';
 import { Permission } from '@/auth/roles';
 import type { BookingStatusValue } from '@/data/models/booking';
+import posthog from '@/lib/posthog';
 
 type SortField = 'operator_name' | 'show_date' | 'drone_count' | 'location' | 'status';
 type SortDir = 'asc' | 'desc';
@@ -34,10 +35,18 @@ function AdminBookingQueueInner() {
   });
 
   async function handleTransition(id: string, newStatus: BookingStatusValue) {
+    const booking = bookings.find((b) => b.id === id);
     try {
       await transitionBooking(id, newStatus);
-    } catch {
-      // Error is shown via the hook's error state if needed
+      posthog.capture('booking_queue_transition', {
+        booking_id: id,
+        from_status: booking?.status,
+        to_status: newStatus,
+        operator_name: booking?.operator_name,
+        drone_count: booking?.drone_count,
+      });
+    } catch (err) {
+      posthog.captureException(err);
     }
   }
 

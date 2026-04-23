@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react'
 import { Html5Qrcode } from 'html5-qrcode';
 import './scan.css';
 
+interface CameraDevice {
+  id: string;
+  label: string;
+}
+
 interface QRScannerProps {
   onScan: (serial: string) => void;
   scanning: boolean;
@@ -11,6 +16,8 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
   const [serial, setSerial] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState('');
+  const [cameras, setCameras] = useState<CameraDevice[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -25,49 +32,92 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
     setCameraActive(false);
   }, []);
 
+  const [pendingStart, setPendingStart] = useState(false);
+
   const startCamera = useCallback(async () => {
     setCameraError('');
     if (!containerRef.current) return;
 
     try {
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode('qr-reader');
-      }
+      // Request camera permission explicitly before enumerating
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((t) => t.stop());
 
-      await scannerRef.current.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1,
-        },
-        (decodedText) => {
-          // QR decoded — extract serial from the text
-          // QR might contain just the serial or a URL with the serial
-          const serial = decodedText.replace(/.*serial[=:]?/i, '').trim();
-          onScan(serial || decodedText);
-          stopCamera();
-        },
-        () => {
-          // QR scan error (no QR found in frame) — ignore
-        },
+      // Enumerate cameras after permission is granted
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices
+        .filter((d) => d.kind === 'videoinput')
+        .map((d, i) => ({ id: d.deviceId, label: d.label || `Camera ${i + 1}` }));
+
+      setCameras(videoDevices);
+
+      // Default to environment-facing camera if available, otherwise first camera
+      const envCamera = videoDevices.find(
+        (d) => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'),
       );
+      const defaultId = envCamera?.id || videoDevices[0]?.id || '';
+      if (!selectedCameraId) setSelectedCameraId(defaultId);
 
       setCameraActive(true);
+      setPendingStart(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Camera access denied';
-      setCameraError(msg.includes('NotAllowedError')
+      const msg = err instanceof Error ? err.message : String(err);
+      setCameraError(msg.includes('NotAllowedError') || msg.includes('Permission denied')
         ? 'Camera permission denied. Please allow camera access in your browser settings.'
-        : msg.includes('NotFoundError')
+        : msg.includes('NotFoundError') || msg.includes('Requested device not found')
           ? 'No camera found. Use manual entry below.'
           : `Camera error: ${msg}`
       );
     }
-  }, [onScan, stopCamera]);
+  }, [selectedCameraId]);
+
+  // Start the scanner after the qr-reader div is rendered
+  useEffect(() => {
+    if (!pendingStart || !cameraActive) return;
+    setPendingStart(false);
+
+    const cameraId = selectedCameraId;
+
+    (async () => {
+      try {
+        // Stop existing scanner if switching cameras
+        if (scannerRef.current?.isScanning) {
+          await scannerRef.current.stop();
+        }
+
+        if (!scannerRef.current) {
+          scannerRef.current = new Html5Qrcode('qr-reader');
+        }
+
+        const cameraConfig = cameraId
+          ? { deviceId: { exact: cameraId } }
+          : { facingMode: 'environment' };
+
+        await scannerRef.current.start(
+          cameraConfig,
+          { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
+          (decodedText) => {
+            const serial = decodedText.replace(/.*serial[=:]?/i, '').trim();
+            onScan(serial || decodedText);
+            stopCamera();
+          },
+          () => {},
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setCameraError(`Camera error: ${msg}`);
+        setCameraActive(false);
+      }
+    })();
+  }, [pendingStart, cameraActive, selectedCameraId, onScan, stopCamera]);
+
+  const switchCamera = useCallback((deviceId: string) => {
+    setSelectedCameraId(deviceId);
+    setPendingStart(true);
+  }, []);
 
   useEffect(() => {
     return () => {
-      // Cleanup on unmount
       if (scannerRef.current?.isScanning) {
         scannerRef.current.stop().catch(() => {});
       }
@@ -88,9 +138,22 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
         {cameraActive ? (
           <div className="camera-container">
             <div id="qr-reader" className="qr-reader-element" />
-            <button type="button" className="camera-stop-btn" onClick={stopCamera}>
-              Stop Camera
-            </button>
+            <div className="camera-controls">
+              {cameras.length > 1 && (
+                <select
+                  className="camera-select"
+                  value={selectedCameraId}
+                  onChange={(e) => switchCamera(e.target.value)}
+                >
+                  {cameras.map((cam) => (
+                    <option key={cam.id} value={cam.id}>{cam.label}</option>
+                  ))}
+                </select>
+              )}
+              <button type="button" className="camera-stop-btn" onClick={stopCamera}>
+                Stop Camera
+              </button>
+            </div>
           </div>
         ) : (
           <div className="scan-frame-content">

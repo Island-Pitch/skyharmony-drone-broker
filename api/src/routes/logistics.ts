@@ -5,6 +5,7 @@ import { manifests, transportLegs, assets, bookings } from '../db/schema.js';
 import { eq, inArray } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -70,8 +71,21 @@ router.post(
         })
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'manifest_created',
+        properties: {
+          manifest_id: manifest!.id,
+          booking_id: body.booking_id,
+          asset_count: allocatedAssets.length,
+          pickup_location: body.pickup_location,
+          delivery_location: body.delivery_location,
+        },
+      });
+
       res.status(201).json({ data: manifest });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Create manifest error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -174,8 +188,21 @@ router.post(
         })
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'transport_leg_created',
+        properties: {
+          leg_id: leg!.id,
+          manifest_id: manifestId,
+          leg_number: nextLeg,
+          origin: body.origin,
+          destination: body.destination,
+        },
+      });
+
       res.status(201).json({ data: leg });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Create leg error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -265,8 +292,20 @@ router.patch(
         }
       }
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'transport_leg_updated',
+        properties: {
+          leg_id: legId,
+          manifest_id: existingLeg.manifest_id,
+          from_status: existingLeg.status,
+          to_status: body.status,
+        },
+      });
+
       res.json({ data: updated });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Update leg error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

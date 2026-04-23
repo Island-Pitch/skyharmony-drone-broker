@@ -3,6 +3,7 @@ import { db } from '../db/connection.js';
 import { bookings, assets } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { auth } from '../middleware/auth.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -139,6 +140,7 @@ router.get('/forecasting/demand', auth, async (_req, res) => {
 
     res.json({ data: { forecasts } });
   } catch (err) {
+    posthog.captureException(err, _req.user?.userId);
     console.error('Forecasting demand error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

@@ -5,6 +5,7 @@ import { sponsors, bookingSponsors, bookings } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -42,8 +43,16 @@ router.post('/sponsors', auth, requireRole('CentralRepoAdmin'), validate(CreateS
       campaign_tag: body.campaign_tag ?? null,
       contact_email: body.contact_email ?? null,
     }).returning();
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'sponsor_created',
+      properties: { sponsor_id: sponsor!.id, sponsor_name: body.name, campaign_tag: body.campaign_tag },
+    });
+
     res.status(201).json({ data: sponsor });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Sponsor create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -74,8 +83,15 @@ router.post('/sponsors/attach', auth, validate(AttachSponsorSchema), async (req,
       campaign_name: body.campaign_name ?? null,
     }).returning();
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'sponsor_attached_to_booking',
+      properties: { booking_id: body.booking_id, sponsor_id: body.sponsor_id, sponsor_name: sponsor.name },
+    });
+
     res.status(201).json({ data: link });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Sponsor attach error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

@@ -3,6 +3,7 @@ import { db } from '../db/connection.js';
 import { invoices, bookings, incidents } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -114,8 +115,21 @@ router.post(
         })
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'invoice_generated',
+        properties: {
+          invoice_id: invoice!.id,
+          booking_id: bookingId,
+          operator_id: invoice!.operator_id,
+          operator_name: invoice!.operator_name,
+          total: Number(invoice!.total),
+        },
+      });
+
       res.status(201).json({ data: invoice });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Invoice generation error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -230,8 +244,21 @@ router.post('/invoices/:id/pay', auth, async (req, res) => {
       .where(eq(invoices.id, id))
       .returning();
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'invoice_paid',
+      properties: {
+        invoice_id: updated!.id,
+        booking_id: updated!.booking_id,
+        operator_id: updated!.operator_id,
+        total: Number(updated!.total),
+        payment_method: paymentMethod,
+      },
+    });
+
     res.json({ data: updated });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Pay invoice error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

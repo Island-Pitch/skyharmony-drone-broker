@@ -5,6 +5,7 @@ import { bookings } from '../db/schema.js';
 import { eq, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -91,8 +92,23 @@ router.post('/bookings', auth, validate(CreateBookingSchema), async (req, res) =
       status: 'pending',
       allocated_assets: [],
     }).returning();
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'booking_created',
+      properties: {
+        booking_id: booking!.id,
+        operator_id: booking!.operator_id,
+        operator_name: booking!.operator_name,
+        drone_count: booking!.drone_count,
+        location: booking!.location,
+        show_date: booking!.show_date,
+      },
+    });
+
     res.status(201).json({ data: booking });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Booking create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -165,8 +181,21 @@ router.post('/bookings/:id/transition', auth, requireRole('CentralRepoAdmin'), v
       .where(eq(bookings.id, id))
       .returning();
 
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'booking_status_transitioned',
+      properties: {
+        booking_id: id,
+        previous_status: booking.status,
+        new_status: newStatus,
+        operator_id: booking.operator_id,
+        drone_count: booking.drone_count,
+      },
+    });
+
     res.json({ data: updated });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Booking transition error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

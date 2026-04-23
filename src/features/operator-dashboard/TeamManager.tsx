@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { TeamMember } from '@/hooks/useOperatorOverview';
+import posthog from '@/lib/posthog';
 
 interface TeamManagerProps {
   team: TeamMember[];
@@ -30,6 +31,7 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
     try {
       setInviteTempPassword(null);
       const result = await onInvite(inviteEmail.trim(), inviteName.trim(), 'OperatorStaff');
+      posthog.capture('team_member_invited', { role: 'OperatorStaff' });
       if (result?.temporary_password) {
         setInviteTempPassword(result.temporary_password);
       }
@@ -37,6 +39,7 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
       setInviteName('');
       setShowInvite(false);
     } catch (err) {
+      posthog.captureException(err);
       setInviteError(err instanceof Error ? err.message : 'Failed to invite');
     } finally {
       setInviting(false);
@@ -47,6 +50,7 @@ export function TeamManager({ team, isAdmin, onInvite, onRemove }: TeamManagerPr
     setRemoving(true);
     try {
       await onRemove(userId);
+      posthog.capture('team_member_removed', { removed_user_id: userId });
       setConfirmRemove(null);
     } catch {
       // silently fail

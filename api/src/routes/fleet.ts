@@ -5,6 +5,7 @@ import { assets, assetTypes } from '../db/schema.js';
 import { eq, and, or, sql, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -263,6 +264,19 @@ router.post('/fleet', auth, requireRole('CentralRepoAdmin'), validate(CreateAsse
       flight_hours: body.flight_hours != null ? String(body.flight_hours) : '0',
       status: 'available',
     }).returning();
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'asset_created',
+      properties: {
+        asset_id: asset!.id,
+        asset_type_id: body.asset_type_id,
+        serial_number: body.serial_number,
+        manufacturer: body.manufacturer,
+        model: body.model,
+      },
+    });
+
     res.status(201).json({ data: asset });
   } catch (err: any) {
     if (err?.code === '23505') {
@@ -309,8 +323,20 @@ router.patch('/fleet/:id', auth, validate(UpdateAssetSchema), async (req, res) =
       res.status(404).json({ error: 'Asset not found' });
       return;
     }
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'asset_updated',
+      properties: {
+        asset_id: id,
+        updated_fields: Object.keys(body),
+        new_status: body.status,
+      },
+    });
+
     res.json({ data: asset });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Fleet update error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -325,8 +351,16 @@ router.delete('/fleet/:id', auth, requireRole('CentralRepoAdmin'), async (req, r
       res.status(404).json({ error: 'Asset not found' });
       return;
     }
+
+    posthog.capture({
+      distinctId: req.user!.userId,
+      event: 'asset_deleted',
+      properties: { asset_id: id, serial_number: deleted.serial_number },
+    });
+
     res.json({ data: { id: deleted.id, deleted: true } });
   } catch (err) {
+    posthog.captureException(err, req.user?.userId);
     console.error('Fleet delete error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

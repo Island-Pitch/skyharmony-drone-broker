@@ -7,6 +7,7 @@ import { users, assets, bookings, invoices, settlements } from '../db/schema.js'
 import { eq, and, count, gte } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -240,6 +241,16 @@ router.post(
         })
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'team_member_invited',
+        properties: {
+          invited_user_id: newUser!.id,
+          role,
+          organization: currentUser.organization,
+        },
+      });
+
       res.status(201).json({
         data: {
           id: newUser!.id,
@@ -251,6 +262,7 @@ router.post(
         },
       });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Operator team invite error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -323,8 +335,15 @@ router.delete(
         .where(eq(users.id, targetUserId))
         .returning();
 
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'team_member_removed',
+        properties: { removed_user_id: targetUserId, organization: currentUser?.organization },
+      });
+
       res.json({ data: { id: removed!.id, deleted: true } });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Operator team remove error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

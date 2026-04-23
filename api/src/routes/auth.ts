@@ -6,6 +6,7 @@ import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { validate } from '../middleware/validate.js';
 import { auth, signToken } from '../middleware/auth.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -39,6 +40,15 @@ router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
     }).returning();
 
     const token = signToken({ userId: user!.id, email: user!.email, role: user!.role });
+
+    posthog.capture({
+      distinctId: user!.id,
+      event: 'user_signed_up',
+      properties: {
+        $set: { email: user!.email, name: user!.name, role: user!.role },
+      },
+    });
+
     res.status(201).json({
       data: {
         token,
@@ -46,6 +56,7 @@ router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
       },
     });
   } catch (err) {
+    posthog.captureException(err);
     console.error('Signup error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -68,6 +79,16 @@ router.post('/auth/login', validate(LoginSchema), async (req, res) => {
     }
 
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
+
+    posthog.capture({
+      distinctId: user.id,
+      event: 'user_logged_in',
+      properties: {
+        role: user.role,
+        onboarded: user.onboarded,
+      },
+    });
+
     res.json({
       data: {
         token,
@@ -75,6 +96,7 @@ router.post('/auth/login', validate(LoginSchema), async (req, res) => {
       },
     });
   } catch (err) {
+    posthog.captureException(err);
     console.error('Login error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -100,12 +122,10 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       res.status(403).json({ error: 'Already onboarded' });
       return;
     }
-    if (role === 'CentralRepoAdmin' && current.role !== 'CentralRepoAdmin') {
-      res.status(403).json({ error: 'Insufficient permissions' });
-      return;
-    }
-    if (current.role !== 'CentralRepoAdmin' && role === 'OperatorAdmin') {
-      res.status(403).json({ error: 'Insufficient permissions' });
+    const isPrivilegedRole = role === 'CentralRepoAdmin' || role === 'OperatorAdmin';
+    const allowSelfAssignPrivilegedRoles = process.env.ALLOW_SELF_ASSIGN_PRIVILEGED_ROLES === 'true';
+    if (isPrivilegedRole && !allowSelfAssignPrivilegedRoles) {
+      res.status(403).json({ error: 'Role not permitted' });
       return;
     }
 
@@ -119,6 +139,18 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       return;
     }
 
+    posthog.capture({
+      distinctId: user.id,
+      event: 'user_onboarded',
+      properties: {
+        role: user.role,
+        organization: user.organization,
+        region: user.region,
+        fleet_size: user.fleet_size,
+        $set: { role: user.role, organization: user.organization, region: user.region, fleet_size: user.fleet_size },
+      },
+    });
+
     // Issue new token with updated role
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
     res.json({
@@ -128,6 +160,7 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       },
     });
   } catch (err) {
+    posthog.captureException(err);
     console.error('Onboard error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }

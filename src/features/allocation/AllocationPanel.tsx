@@ -3,6 +3,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { useAllocation } from '@/hooks/useAllocation';
 import { RouteGuard } from '@/auth/RouteGuard';
 import { Permission } from '@/auth/roles';
+import posthog from '@/lib/posthog';
 
 /** Mock actor ID — in production this comes from the auth context. */
 const SYSTEM_ACTOR_ID = '00000000-0000-4000-9000-000000000001';
@@ -31,13 +32,19 @@ function AllocationPanelInner() {
   }, [selectedBooking, checkAvailability]);
 
   async function handleAllocate() {
-    if (!selectedBookingId) return;
+    if (!selectedBookingId || !selectedBooking) return;
     try {
       await allocate(selectedBookingId, SYSTEM_ACTOR_ID);
+      posthog.capture('allocation_executed', {
+        booking_id: selectedBookingId,
+        drones_requested: selectedBooking.drone_count,
+        drones_available: available.length,
+        operator_name: selectedBooking.operator_name,
+      });
       setSelectedBookingId(null);
       await refreshBookings();
-    } catch {
-      // Error is captured in the hook
+    } catch (err) {
+      posthog.captureException(err);
     }
   }
 

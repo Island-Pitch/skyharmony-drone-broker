@@ -6,6 +6,7 @@ import { assetBaselines, anomalies, telemetrySyncs, assets } from '../db/schema.
 import { eq, sql, count, and } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import posthog from '../lib/posthog.js';
 
 const router = Router();
 
@@ -142,6 +143,12 @@ router.post(
       const coveragePct =
         totalActive > 0 ? Math.round((totalBaselines / totalActive) * 1000) / 10 : 0;
 
+      posthog.capture({
+        distinctId: _req.user!.userId,
+        event: 'baselines_computed',
+        properties: { baselines_computed: baselinesComputed, fleet_coverage_pct: coveragePct },
+      });
+
       res.json({
         data: {
           baselines_computed: baselinesComputed,
@@ -150,6 +157,7 @@ router.post(
         },
       });
     } catch (err) {
+      posthog.captureException(err, _req.user?.userId);
       console.error('Compute baselines error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -265,12 +273,12 @@ router.post(
         const [currentRow] = await db
           .select({ count: count() })
           .from(telemetrySyncs)
-          .where(sql`${telemetrySyncs.asset_id} = ANY(${assetIds}) AND ${telemetrySyncs.synced_at} >= ${oneDayAgo}`);
+          .where(sql`${telemetrySyncs.asset_id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`}) AND ${telemetrySyncs.synced_at} >= ${oneDayAgo}`);
 
         const [previousRow] = await db
           .select({ count: count() })
           .from(telemetrySyncs)
-          .where(sql`${telemetrySyncs.asset_id} = ANY(${assetIds}) AND ${telemetrySyncs.synced_at} >= ${twoDaysAgo} AND ${telemetrySyncs.synced_at} < ${oneDayAgo}`);
+          .where(sql`${telemetrySyncs.asset_id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`}) AND ${telemetrySyncs.synced_at} >= ${twoDaysAgo} AND ${telemetrySyncs.synced_at} < ${oneDayAgo}`);
 
         const currentCount = Number(currentRow?.count ?? 0);
         const previousCount = Number(previousRow?.count ?? 0);
@@ -301,10 +309,17 @@ router.post(
         }
       }
 
+      posthog.capture({
+        distinctId: _req.user!.userId,
+        event: 'anomalies_detected',
+        properties: { anomalies_created: anomaliesCreated.length },
+      });
+
       res.json({
         data: { anomalies_created: anomaliesCreated.length, anomalies: anomaliesCreated },
       });
     } catch (err) {
+      posthog.captureException(err, _req.user?.userId);
       console.error('Detect anomalies error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -346,7 +361,7 @@ router.get('/analytics/anomalies', auth, async (req, res) => {
       const assetRows = await db
         .select({ id: assets.id, serial_number: assets.serial_number })
         .from(assets)
-        .where(sql`${assets.id} = ANY(${assetIds})`);
+        .where(sql`${assets.id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`})`);
       for (const a of assetRows) assetMap.set(a.id, a.serial_number);
     }
 
@@ -404,8 +419,21 @@ router.post(
         res.status(404).json({ error: 'Anomaly not found' });
         return;
       }
+
+      posthog.capture({
+        distinctId: req.user!.userId,
+        event: 'anomaly_reviewed',
+        properties: {
+          anomaly_id: id,
+          decision: status,
+          anomaly_type: anomaly.anomaly_type,
+          asset_id: anomaly.asset_id,
+        },
+      });
+
       res.json({ data: anomaly });
     } catch (err) {
+      posthog.captureException(err, req.user?.userId);
       console.error('Anomaly review error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }

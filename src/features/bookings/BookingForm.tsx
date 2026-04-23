@@ -3,6 +3,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/auth/useAuth';
 import { RouteGuard } from '@/auth/RouteGuard';
 import { Permission } from '@/auth/roles';
+import posthog from '@/lib/posthog';
 
 interface FormState {
   show_date: string;
@@ -28,7 +29,7 @@ function BookingFormInner() {
   const [submitting, setSubmitting] = useState(false);
   const [confirmationId, setConfirmationId] = useState<string | null>(null);
 
-  function validate(): boolean {
+  function validate(): Partial<Record<keyof FormState, string>> {
     const newErrors: Partial<Record<keyof FormState, string>> = {};
     if (!form.show_date) newErrors.show_date = 'Show date is required';
     if (!form.drone_count || Number(form.drone_count) < 1) {
@@ -39,12 +40,18 @@ function BookingFormInner() {
     }
     if (!form.location.trim()) newErrors.location = 'Location is required';
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      posthog.capture('booking_form_validation_error', {
+        missing_fields: Object.keys(validationErrors),
+      });
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -60,10 +67,16 @@ function BookingFormInner() {
         location: form.location.trim(),
         notes: form.notes.trim() || undefined,
       });
+      posthog.capture('booking_form_submitted', {
+        booking_id: booking.id,
+        drone_count: Number(form.drone_count),
+        location: form.location.trim(),
+      });
       setConfirmationId(booking.id);
       setForm(initialFormState);
       setErrors({});
-    } catch {
+    } catch (err) {
+      posthog.captureException(err);
       setErrors({ show_date: 'Failed to create booking. Please try again.' });
     } finally {
       setSubmitting(false);

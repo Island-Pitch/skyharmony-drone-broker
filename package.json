@@ -16,7 +16,9 @@
     "docker:run": "docker run -p 3000:3000 skyharmony-drone-broker"
   },
   "dependencies": {
+    "@posthog/react": "^1.9.0",
     "html5-qrcode": "^2.3.8",
+    "posthog-js": "^1.370.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.5.0",

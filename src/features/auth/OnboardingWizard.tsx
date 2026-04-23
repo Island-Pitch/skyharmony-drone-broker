@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signup, getMe, type AuthUser } from '@/auth/authService';
 import { apiPost, setAuthToken } from '@/data/repositories/http/apiClient';
+import posthog from '@/lib/posthog';
 
 interface SignupData {
   role: string;
@@ -145,7 +146,10 @@ export function OnboardingWizard() {
               {ROLE_OPTIONS.map((opt) => (
                 <button key={opt.value} type="button"
                   className={`role-card ${data.role === opt.value ? 'selected' : ''}`}
-                  onClick={() => setData({ ...data, role: opt.value })}
+                  onClick={() => {
+                    setData({ ...data, role: opt.value });
+                    posthog.capture('onboarding_role_selected', { role: opt.value });
+                  }}
                 >
                   <div className="role-icon">{opt.icon}</div>
                   <strong>{opt.label}</strong>
@@ -274,7 +278,14 @@ export function OnboardingWizard() {
               Welcome to the SkyHarmony cooperative, {data.organization}.
               Your {data.region} workspace is ready.
             </p>
-            <button className="btn-primary onboarding-next" onClick={() => navigate('/dashboard')}>
+            <button className="btn-primary onboarding-next" onClick={() => {
+              posthog.capture('onboarding_completed', {
+                role: data.role,
+                organization: data.organization,
+                region: data.region,
+              });
+              navigate('/dashboard');
+            }}>
               Enter Platform
             </button>
           </div>
