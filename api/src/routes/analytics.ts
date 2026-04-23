@@ -273,12 +273,12 @@ router.post(
         const [currentRow] = await db
           .select({ count: count() })
           .from(telemetrySyncs)
-          .where(sql`${telemetrySyncs.asset_id} = ANY(${assetIds}) AND ${telemetrySyncs.synced_at} >= ${oneDayAgo}`);
+          .where(sql`${telemetrySyncs.asset_id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`}) AND ${telemetrySyncs.synced_at} >= ${oneDayAgo}`);
 
         const [previousRow] = await db
           .select({ count: count() })
           .from(telemetrySyncs)
-          .where(sql`${telemetrySyncs.asset_id} = ANY(${assetIds}) AND ${telemetrySyncs.synced_at} >= ${twoDaysAgo} AND ${telemetrySyncs.synced_at} < ${oneDayAgo}`);
+          .where(sql`${telemetrySyncs.asset_id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`}) AND ${telemetrySyncs.synced_at} >= ${twoDaysAgo} AND ${telemetrySyncs.synced_at} < ${oneDayAgo}`);
 
         const currentCount = Number(currentRow?.count ?? 0);
         const previousCount = Number(previousRow?.count ?? 0);
@@ -361,7 +361,7 @@ router.get('/analytics/anomalies', auth, async (req, res) => {
       const assetRows = await db
         .select({ id: assets.id, serial_number: assets.serial_number })
         .from(assets)
-        .where(sql`${assets.id} = ANY(${assetIds})`);
+        .where(sql`${assets.id} = ANY(${sql`ARRAY[${sql.join(assetIds.map(id => sql`${id}`), sql`, `)}]::uuid[]`})`);
       for (const a of assetRows) assetMap.set(a.id, a.serial_number);
     }
 
