@@ -30,6 +30,11 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
     if (!containerRef.current) return;
 
     try {
+      // Request camera permission explicitly before html5-qrcode tries to enumerate
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      // Stop the temporary stream — html5-qrcode will open its own
+      stream.getTracks().forEach((t) => t.stop());
+
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('qr-reader');
       }
@@ -42,8 +47,6 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
           aspectRatio: 1,
         },
         (decodedText) => {
-          // QR decoded — extract serial from the text
-          // QR might contain just the serial or a URL with the serial
           const serial = decodedText.replace(/.*serial[=:]?/i, '').trim();
           onScan(serial || decodedText);
           stopCamera();
@@ -55,10 +58,10 @@ export function QRScanner({ onScan, scanning }: QRScannerProps) {
 
       setCameraActive(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Camera access denied';
-      setCameraError(msg.includes('NotAllowedError')
+      const msg = err instanceof Error ? err.message : String(err);
+      setCameraError(msg.includes('NotAllowedError') || msg.includes('Permission denied')
         ? 'Camera permission denied. Please allow camera access in your browser settings.'
-        : msg.includes('NotFoundError')
+        : msg.includes('NotFoundError') || msg.includes('Requested device not found')
           ? 'No camera found. Use manual entry below.'
           : `Camera error: ${msg}`
       );
