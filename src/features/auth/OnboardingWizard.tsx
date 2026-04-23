@@ -250,6 +250,7 @@ export function OnboardingWizard() {
                     !data.name ||
                     !data.email ||
                     (!completingExistingAccount && !data.password) ||
+                    (!showFleetStep && emailTaken) ||
                     loading
                   }
                 >
