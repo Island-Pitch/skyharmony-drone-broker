@@ -1594,6 +1594,12 @@ form {
   border-radius: var(--radius);
 }
 
+.onboarding-session-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: -0.25rem;
+}
+
 .login-toggle {
   text-align: center;
   margin-top: 1.5rem;
