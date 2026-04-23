@@ -1,7 +1,7 @@
 import posthog from 'posthog-js';
 
 const apiKey = import.meta.env.VITE_POSTHOG_KEY;
-const apiHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
+const apiHost = import.meta.env.VITE_POSTHOG_HOST || 'https://m.skyharmony.net';
 
 if (apiKey) {
   posthog.init(apiKey, {
