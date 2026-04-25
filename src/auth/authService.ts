@@ -48,3 +48,13 @@ export function logout() {
 export function isAuthenticated(): boolean {
   return !!getAuthToken();
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string; resetUrl?: string }> {
+  const res = await apiPost<{ message: string; resetUrl?: string }>('/auth/forgot-password', { email });
+  return res.data;
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ message: string }> {
+  const res = await apiPost<{ message: string }>('/auth/reset-password', { token, password });
+  return res.data;
+}

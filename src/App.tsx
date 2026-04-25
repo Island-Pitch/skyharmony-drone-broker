@@ -7,6 +7,8 @@ import { routeComponents } from './routing/routeComponents';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { LandingPage } from './features/landing/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
+import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
 import { OnboardingWizard } from './features/auth/OnboardingWizard';
 import { PrivacyPage } from './features/legal/PrivacyPage';
 import { TermsPage } from './features/legal/TermsPage';
@@ -23,6 +25,8 @@ export function App() {
         {/* Public routes — no DataProvider, no auth required */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<DataProvider><OnboardingWizard /></DataProvider>} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />

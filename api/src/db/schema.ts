@@ -27,6 +27,8 @@ export const users = pgTable('users', {
   onboarded: varchar('onboarded', { length: 10 }).default('false'),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
+  reset_token: varchar('reset_token', { length: 64 }),
+  reset_token_expires_at: timestamp('reset_token_expires_at'),
 });
 
 /* ------------------------------------------------------------------ */

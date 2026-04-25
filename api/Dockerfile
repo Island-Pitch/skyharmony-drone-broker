@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npm run build && mkdir -p node_modules/.drizzle
 
 FROM node:22-alpine AS runtime
 RUN apk add --no-cache curl
@@ -14,7 +14,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /app/src/db/seed.ts ./src/db/seed.ts
-COPY --from=build /app/node_modules/.drizzle ./node_modules/.drizzle 2>/dev/null || true
+COPY --from=build /app/node_modules/.drizzle ./node_modules/.drizzle
 EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:4000/api/health || exit 1

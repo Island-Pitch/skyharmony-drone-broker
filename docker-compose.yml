@@ -24,9 +24,13 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://skyharmony:skyharmony_dev@db:5432/skyharmony
-      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_SECRET: ${JWT_SECRET:-skyharmony-docker-dev-secret}
       PORT: 4000
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_FROM: ${SMTP_FROM:-noreply@skyharmony.net}
+      APP_URL: ${APP_URL:-http://localhost:50080}
     command: >
       sh -c "
         npx drizzle-kit migrate &&
