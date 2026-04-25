@@ -4,9 +4,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: skyharmony
-      POSTGRES_USER: skyharmony
-      POSTGRES_PASSWORD: skyharmony_dev
+      POSTGRES_DB: ${POSTGRES_DB:-skyharmony}
+      POSTGRES_USER: ${POSTGRES_USER:-skyharmony}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,18 +23,19 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://skyharmony:skyharmony_dev@db:5432/skyharmony
-      JWT_SECRET: ${JWT_SECRET:-skyharmony-docker-dev-secret}
+      DATABASE_URL: postgres://${POSTGRES_USER:-skyharmony}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-skyharmony}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       PORT: 4000
       NODE_ENV: ${NODE_ENV:-development}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_FROM: ${SMTP_FROM:-noreply@skyharmony.net}
       APP_URL: ${APP_URL:-http://localhost:50080}
+      SEED_DATA: ${SEED_DATA:-false}
     command: >
       sh -c "
         npx drizzle-kit migrate &&
-        node dist/db/seed.js &&
+        if [ \"$$SEED_DATA\" = 'true' ]; then node dist/db/seed.js; fi &&
         node dist/index.js
       "
     healthcheck:
