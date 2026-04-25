@@ -21,7 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.6",
     "pg": "^8.16.0",
-    "posthog-node": "^5.29.5",
+    "posthog-node": "^5.30.4",
     "zod": "^4.0.0"
   },
   "devDependencies": {
