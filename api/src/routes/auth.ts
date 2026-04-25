@@ -194,8 +194,6 @@ router.post('/auth/forgot-password', validate(ForgotPasswordSchema), async (req,
       const appUrl = process.env.APP_URL || 'http://localhost:5173';
       const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
-      console.log(`[AUTH] Password reset link for ${email}: ${resetUrl}`);
-
       await sendEmail(email, 'SkyHarmony — Reset Your Password', `
         <p>Hi ${user.name},</p>
         <p>We received a request to reset your password. Click the link below to set a new one:</p>
@@ -211,12 +209,12 @@ router.post('/auth/forgot-password', validate(ForgotPasswordSchema), async (req,
       posthog.capture({ distinctId: user.id, event: 'password_reset_requested' });
 
       if (process.env.NODE_ENV !== 'production') {
-        res.json({ message: genericMessage, data: { resetUrl } });
+        res.json({ data: { message: genericMessage, resetUrl } });
         return;
       }
     }
 
-    res.json({ message: genericMessage });
+    res.json({ data: { message: genericMessage } });
   } catch (err) {
     posthog.captureException(err);
     console.error('Forgot password error:', err);
@@ -244,16 +242,6 @@ router.post('/auth/reset-password', validate(ResetPasswordSchema), async (req, r
       return;
     }
 
-    // Timing-safe comparison
-    const tokenMatch = crypto.timingSafeEqual(
-      Buffer.from(user.reset_token),
-      Buffer.from(token),
-    );
-    if (!tokenMatch) {
-      res.status(400).json({ error: invalidMessage });
-      return;
-    }
-
     if (!user.reset_token_expires_at || user.reset_token_expires_at < new Date()) {
       res.status(400).json({ error: invalidMessage });
       return;
@@ -266,7 +254,7 @@ router.post('/auth/reset-password', validate(ResetPasswordSchema), async (req, r
 
     posthog.capture({ distinctId: user.id, event: 'password_reset_completed' });
 
-    res.json({ message: 'Password has been reset successfully' });
+    res.json({ data: { message: 'Password has been reset successfully' } });
   } catch (err) {
     posthog.captureException(err);
     console.error('Reset password error:', err);
