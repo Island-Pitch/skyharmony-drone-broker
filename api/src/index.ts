@@ -28,6 +28,11 @@ import routesRouter from './routes/routes.js';
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+// Behind a reverse proxy (e.g., container ingress), trust one hop for correct client IP detection.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:50080'];
 const corsOrigins =
   typeof process.env.CORS_ORIGINS === 'string' && process.env.CORS_ORIGINS.trim() !== ''
