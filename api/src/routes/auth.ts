@@ -2,6 +2,7 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import rateLimit from 'express-rate-limit';
 import { db } from '../db/connection.js';
 import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -9,8 +10,18 @@ import { validate } from '../middleware/validate.js';
 import { auth, signToken } from '../middleware/auth.js';
 import posthog from '../lib/posthog.js';
 import { sendEmail } from '../lib/email.js';
+import { auditLog } from '../lib/audit.js';
 
 const router = Router();
+
+// Strict rate limit for auth endpoints: 5 requests per minute per IP
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later' },
+});
 
 function escapeHtml(input: string): string {
   return input.replace(/[&<>"']/g, (ch) => {
@@ -42,7 +53,7 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
-router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
+router.post('/auth/signup', authLimiter, validate(SignupSchema), async (req, res) => {
   try {
     const { email, password, name } = req.body as z.infer<typeof SignupSchema>;
 
@@ -83,7 +94,7 @@ router.post('/auth/signup', validate(SignupSchema), async (req, res) => {
   }
 });
 
-router.post('/auth/login', validate(LoginSchema), async (req, res) => {
+router.post('/auth/login', authLimiter, validate(LoginSchema), async (req, res) => {
   try {
     const { email, password } = req.body as z.infer<typeof LoginSchema>;
 
@@ -160,6 +171,14 @@ router.post('/auth/onboard', auth, validate(OnboardSchema), async (req, res) => 
       return;
     }
 
+    await auditLog({
+      action: 'role_assigned',
+      actorId: user.id,
+      targetType: 'user',
+      targetId: user.id,
+      details: { role: user.role, organization: user.organization },
+    });
+
     posthog.capture({
       distinctId: user.id,
       event: 'user_onboarded',
@@ -195,7 +214,7 @@ const ForgotPasswordSchema = z.object({
   email: z.string().email(),
 });
 
-router.post('/auth/forgot-password', validate(ForgotPasswordSchema), async (req, res) => {
+router.post('/auth/forgot-password', authLimiter, validate(ForgotPasswordSchema), async (req, res) => {
   try {
     const { email } = req.body as z.infer<typeof ForgotPasswordSchema>;
     const genericMessage = 'If an account with that email exists, a reset link has been sent.';
@@ -251,7 +270,7 @@ const ResetPasswordSchema = z.object({
   password: z.string().min(6),
 });
 
-router.post('/auth/reset-password', validate(ResetPasswordSchema), async (req, res) => {
+router.post('/auth/reset-password', authLimiter, validate(ResetPasswordSchema), async (req, res) => {
   try {
     const { token, password } = req.body as z.infer<typeof ResetPasswordSchema>;
     const invalidMessage = 'Invalid or expired reset token';
@@ -272,6 +291,13 @@ router.post('/auth/reset-password', validate(ResetPasswordSchema), async (req, r
     await db.update(users)
       .set({ password_hash, reset_token: null, reset_token_expires_at: null, updated_at: new Date() })
       .where(eq(users.id, user.id));
+
+    await auditLog({
+      action: 'password_reset',
+      actorId: user.id,
+      targetType: 'user',
+      targetId: user.id,
+    });
 
     posthog.capture({ distinctId: user.id, event: 'password_reset_completed' });
 
