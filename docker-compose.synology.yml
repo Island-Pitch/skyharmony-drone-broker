@@ -1,9 +1,66 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: skyharmony-db
+    environment:
+      POSTGRES_DB: skyharmony
+      POSTGRES_USER: skyharmony
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skyharmony_dev}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyharmony"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    labels:
+      - "com.islandpitch.project=skyharmony"
+      - "com.islandpitch.role=demo"
+
+  api:
+    build: ./api
+    container_name: skyharmony-api
+    ports:
+      - "${API_PORT:-50081}:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://skyharmony:${POSTGRES_PASSWORD:-skyharmony_dev}@db:5432/skyharmony
+      - JWT_SECRET=${JWT_SECRET:-skyharmony-docker-dev-secret}
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=4000
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - SMTP_HOST=${SMTP_HOST:-192.168.4.235}
+      - SMTP_PORT=${SMTP_PORT:-25}
+      - SMTP_FROM=${SMTP_FROM:-noreply@skyharmony.net}
+      - SMTP_TLS_VERIFY=${SMTP_TLS_VERIFY:-true}
+      - APP_URL=${APP_URL:-https://skyharmony.net}
+    command: >
+      sh -c "
+        node dist/db/seed.js &&
+        node dist/index.js
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "com.islandpitch.project=skyharmony"
+      - "com.islandpitch.role=demo"
+
   app:
     build: .
     container_name: skyharmony-app
     ports:
       - "${APP_PORT:-50080}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - DEMO_MODE=${DEMO_MODE:-true}
@@ -18,35 +75,6 @@ services:
       - "com.islandpitch.project=skyharmony"
       - "com.islandpitch.role=demo"
 
-  api:
-    image: node:22-alpine
-    container_name: skyharmony-api
-    working_dir: /app
-    volumes:
-      - ./api:/app
-      - api_data:/app/data
-    ports:
-      - "${API_PORT:-50081}:4000"
-    command: ["node", "server.js"]
-    environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - PORT=4000
-      - DEMO_MODE=${DEMO_MODE:-true}
-      - SMTP_HOST=${SMTP_HOST:-192.168.4.235}
-      - SMTP_PORT=${SMTP_PORT:-25}
-      - SMTP_FROM=${SMTP_FROM:-noreply@skyharmony.net}
-      - APP_URL=${APP_URL:-https://skyharmony.net}
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
-      interval: 30s
-      timeout: 3s
-      start_period: 10s
-      retries: 3
-    labels:
-      - "com.islandpitch.project=skyharmony"
-      - "com.islandpitch.role=demo"
-
 volumes:
-  api_data:
+  pgdata:
     driver: local
