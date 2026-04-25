@@ -12,6 +12,25 @@ import { sendEmail } from '../lib/email.js';
 
 const router = Router();
 
+function escapeHtml(input: string): string {
+  return input.replace(/[&<>"']/g, (ch) => {
+    switch (ch) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return ch;
+    }
+  });
+}
+
 const SignupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -196,7 +215,7 @@ router.post('/auth/forgot-password', validate(ForgotPasswordSchema), async (req,
       const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
       await sendEmail(email, 'SkyHarmony — Reset Your Password', `
-        <p>Hi ${user.name},</p>
+        <p>Hi ${escapeHtml(user.name)},</p>
         <p>We received a request to reset your password. Click the link below to set a new one:</p>
         <p><a href="${resetUrl}">${resetUrl}</a></p>
         <p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
