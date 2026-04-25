@@ -4,6 +4,7 @@ import { invoices, bookings, incidents } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import posthog from '../lib/posthog.js';
+import { auditLog } from '../lib/audit.js';
 
 const router = Router();
 
@@ -114,6 +115,14 @@ router.post(
           payment_method: 'pending',
         })
         .returning();
+
+      await auditLog({
+        action: 'invoice_generated',
+        actorId: req.user!.userId,
+        targetType: 'invoice',
+        targetId: invoice!.id,
+        details: { booking_id: bookingId, total: Number(invoice!.total) },
+      });
 
       posthog.capture({
         distinctId: req.user!.userId,
@@ -243,6 +252,14 @@ router.post('/invoices/:id/pay', auth, async (req, res) => {
       })
       .where(eq(invoices.id, id))
       .returning();
+
+    await auditLog({
+      action: 'invoice_paid',
+      actorId: req.user!.userId,
+      targetType: 'invoice',
+      targetId: updated!.id,
+      details: { total: Number(updated!.total), payment_method: paymentMethod },
+    });
 
     posthog.capture({
       distinctId: req.user!.userId,
