@@ -185,10 +185,11 @@ router.post('/auth/forgot-password', validate(ForgotPasswordSchema), async (req,
 
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
       await db.update(users)
-        .set({ reset_token: token, reset_token_expires_at: expiresAt, updated_at: new Date() })
+        .set({ reset_token: tokenHash, reset_token_expires_at: expiresAt, updated_at: new Date() })
         .where(eq(users.id, user.id));
 
       const appUrl = process.env.APP_URL || 'http://localhost:5173';
@@ -236,7 +237,8 @@ router.post('/auth/reset-password', validate(ResetPasswordSchema), async (req, r
     const { token, password } = req.body as z.infer<typeof ResetPasswordSchema>;
     const invalidMessage = 'Invalid or expired reset token';
 
-    const [user] = await db.select().from(users).where(eq(users.reset_token, token)).limit(1);
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const [user] = await db.select().from(users).where(eq(users.reset_token, tokenHash)).limit(1);
     if (!user || !user.reset_token) {
       res.status(400).json({ error: invalidMessage });
       return;
