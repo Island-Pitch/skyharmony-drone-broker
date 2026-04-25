@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -9,7 +9,7 @@ ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=build /app/package.json ./package.json
