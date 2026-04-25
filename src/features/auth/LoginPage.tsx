@@ -58,6 +58,10 @@ export function LoginPage() {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="Enter password" />
           </label>
 
+          <Link to="/forgot-password" className="login-link" style={{ alignSelf: 'flex-end', fontSize: '0.8rem' }}>
+            Forgot your password?
+          </Link>
+
           {error && <p className="login-error">{error}</p>}
 
           <button type="submit" className="btn-primary login-btn" disabled={loading}>

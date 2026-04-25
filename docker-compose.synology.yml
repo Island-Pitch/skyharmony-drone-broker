@@ -32,6 +32,10 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=4000
       - DEMO_MODE=${DEMO_MODE:-true}
+      - SMTP_HOST=${SMTP_HOST:-192.168.4.235}
+      - SMTP_PORT=${SMTP_PORT:-25}
+      - SMTP_FROM=${SMTP_FROM:-noreply@skyharmony.net}
+      - APP_URL=${APP_URL:-https://skyharmony.net}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
