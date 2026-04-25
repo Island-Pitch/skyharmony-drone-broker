@@ -6,6 +6,7 @@ import { eq, count } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import posthog from '../lib/posthog.js';
+import { auditLog } from '../lib/audit.js';
 
 const router = Router();
 
@@ -180,6 +181,14 @@ router.post('/bookings/:id/transition', auth, requireRole('CentralRepoAdmin'), v
       .set({ status: newStatus, updated_at: new Date() })
       .where(eq(bookings.id, id))
       .returning();
+
+    await auditLog({
+      action: 'booking_transition',
+      actorId: req.user!.userId,
+      targetType: 'booking',
+      targetId: id,
+      details: { from: booking.status, to: newStatus, operator_id: booking.operator_id },
+    });
 
     posthog.capture({
       distinctId: req.user!.userId,

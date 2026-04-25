@@ -4,6 +4,7 @@ import { settlements, invoices, users } from '../db/schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { auth, requireRole } from '../middleware/auth.js';
 import posthog from '../lib/posthog.js';
+import { auditLog } from '../lib/audit.js';
 
 const router = Router();
 
@@ -237,6 +238,14 @@ router.post(
         .where(eq(settlements.id, id))
         .returning();
 
+      await auditLog({
+        action: 'settlement_approved',
+        actorId: req.user!.userId,
+        targetType: 'settlement',
+        targetId: updated!.id,
+        details: { operator_id: updated!.operator_id, net_amount: Number(updated!.net_amount) },
+      });
+
       posthog.capture({
         distinctId: req.user!.userId,
         event: 'settlement_approved',
@@ -293,6 +302,14 @@ router.post(
         })
         .where(eq(settlements.id, id))
         .returning();
+
+      await auditLog({
+        action: 'settlement_paid',
+        actorId: req.user!.userId,
+        targetType: 'settlement',
+        targetId: updated!.id,
+        details: { operator_id: updated!.operator_id, net_amount: Number(updated!.net_amount), payment_reference: paymentReference },
+      });
 
       posthog.capture({
         distinctId: req.user!.userId,

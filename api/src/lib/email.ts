@@ -15,6 +15,7 @@ if (SMTP_HOST) {
     port: SMTP_PORT,
     secure: SMTP_SECURE,
     ...(SMTP_USER && SMTP_PASS ? { auth: { user: SMTP_USER, pass: SMTP_PASS } } : {}),
+    tls: { rejectUnauthorized: process.env.SMTP_TLS_VERIFY !== 'false' },
   });
 } else {
   console.warn('[EMAIL] SMTP_HOST not set — emails will be logged but not sent');

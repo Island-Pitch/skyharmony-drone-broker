@@ -1,5 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import crypto from 'node:crypto';
 import posthog from './lib/posthog.js';
 
 import healthRouter from './routes/health.js';
@@ -25,15 +28,40 @@ import routesRouter from './routes/routes.js';
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+// Behind a reverse proxy (e.g., container ingress), trust one hop for correct client IP detection.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:50080'];
 const corsOrigins =
   typeof process.env.CORS_ORIGINS === 'string' && process.env.CORS_ORIGINS.trim() !== ''
     ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
     : defaultOrigins;
 
-// Global middleware
+// Request ID middleware — attach unique ID to every request for log correlation
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const requestId = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+  req.requestId = requestId;
+  res.setHeader('x-request-id', requestId);
+  next();
+});
+
+// Security headers
+app.use(helmet());
+
+// CORS + body parsing
 app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
+
+// Global rate limit: 100 requests per minute per IP
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+}));
 
 // Routes — all under /api
 app.use('/api', healthRouter);
@@ -60,8 +88,17 @@ app.use('/api', routesRouter);
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   const distinctId = (req as any).user?.userId;
   posthog.captureException(err, distinctId);
-  console.error('Unhandled API error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error(JSON.stringify({
+    level: 'error',
+    message: 'Unhandled API error',
+    error: err.message,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
+    requestId: req.requestId,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString(),
+  }));
+  res.status(500).json({ error: 'Internal server error', requestId: req.requestId });
 });
 
 app.listen(PORT, () => {
