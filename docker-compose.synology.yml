@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: skyharmony
       POSTGRES_USER: skyharmony
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-skyharmony_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
@@ -27,8 +27,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgres://skyharmony:${POSTGRES_PASSWORD:-skyharmony_dev}@db:5432/skyharmony
-      - JWT_SECRET=${JWT_SECRET:-skyharmony-docker-dev-secret}
+      - DATABASE_URL=postgres://skyharmony:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/skyharmony
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=4000
       - DEMO_MODE=${DEMO_MODE:-true}
@@ -39,6 +39,7 @@ services:
       - APP_URL=${APP_URL:-https://skyharmony.net}
     command: >
       sh -c "
+        npx drizzle-kit migrate &&
         node dist/db/seed.js &&
         node dist/index.js
       "
