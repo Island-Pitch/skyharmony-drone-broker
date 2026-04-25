@@ -32,6 +32,7 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=4000
       - DEMO_MODE=${DEMO_MODE:-true}
+      - SEED_DATA=${SEED_DATA:-false}
       - SMTP_HOST=${SMTP_HOST:-192.168.4.235}
       - SMTP_PORT=${SMTP_PORT:-25}
       - SMTP_FROM=${SMTP_FROM:-noreply@skyharmony.net}
@@ -40,7 +41,7 @@ services:
     command: >
       sh -c "
         npx drizzle-kit migrate &&
-        node dist/db/seed.js &&
+        if [ \"$$SEED_DATA\" = 'true' ]; then node dist/db/seed.js; fi &&
         node dist/index.js
       "
     restart: unless-stopped

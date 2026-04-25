@@ -45,6 +45,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Security headers
 app.use(helmet());
 
+// CORS + body parsing
+app.use(cors({ origin: corsOrigins }));
+app.use(express.json());
+
 // Global rate limit: 100 requests per minute per IP
 app.use(rateLimit({
   windowMs: 60 * 1000,
@@ -53,10 +57,6 @@ app.use(rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later' },
 }));
-
-// CORS + body parsing
-app.use(cors({ origin: corsOrigins }));
-app.use(express.json());
 
 // Routes — all under /api
 app.use('/api', healthRouter);
