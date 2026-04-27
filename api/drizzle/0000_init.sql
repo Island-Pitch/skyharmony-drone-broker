@@ -1,7 +1,7 @@
 -- SkyHarmony: squashed initial migration
 -- All tables from schema.ts in dependency order
 
-CREATE TABLE IF NOT EXISTS"users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"password_hash" varchar(255) NOT NULL,
@@ -22,7 +22,7 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_token" varchar(64);
 --> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_token_expires_at" timestamp;
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"asset_types" (
+CREATE TABLE IF NOT EXISTS "asset_types" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"description" text,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS"asset_types" (
 	CONSTRAINT "asset_types_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"assets" (
+CREATE TABLE IF NOT EXISTS "assets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_type_id" uuid,
 	"serial_number" varchar(100) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS"assets" (
 	CONSTRAINT "assets_current_operator_id_users_id_fk" FOREIGN KEY ("current_operator_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"bookings" (
+CREATE TABLE IF NOT EXISTS "bookings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"operator_id" uuid,
 	"operator_name" varchar(255),
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS"bookings" (
 	CONSTRAINT "bookings_operator_id_users_id_fk" FOREIGN KEY ("operator_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"audit_events" (
+CREATE TABLE IF NOT EXISTS "audit_events" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"field_changed" varchar(100),
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS"audit_events" (
 	CONSTRAINT "audit_events_changed_by_users_id_fk" FOREIGN KEY ("changed_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"custody_events" (
+CREATE TABLE IF NOT EXISTS "custody_events" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"action" varchar(20) NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS"custody_events" (
 	CONSTRAINT "custody_events_booking_id_bookings_id_fk" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"incidents" (
+CREATE TABLE IF NOT EXISTS "incidents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"booking_id" uuid,
@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS"incidents" (
 	CONSTRAINT "incidents_reporter_id_users_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"manifests" (
+CREATE TABLE IF NOT EXISTS "manifests" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"booking_id" uuid,
 	"status" varchar(50) DEFAULT 'draft' NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS"manifests" (
 	CONSTRAINT "manifests_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"transport_legs" (
+CREATE TABLE IF NOT EXISTS "transport_legs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"manifest_id" uuid,
 	"leg_number" integer NOT NULL,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS"transport_legs" (
 	CONSTRAINT "transport_legs_manifest_id_manifests_id_fk" FOREIGN KEY ("manifest_id") REFERENCES "manifests"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"invoices" (
+CREATE TABLE IF NOT EXISTS "invoices" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"booking_id" uuid,
 	"operator_id" uuid,
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS"invoices" (
 	CONSTRAINT "invoices_operator_id_users_id_fk" FOREIGN KEY ("operator_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"maintenance_rules" (
+CREATE TABLE IF NOT EXISTS "maintenance_rules" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_type_id" uuid,
 	"rule_name" varchar(255) NOT NULL,
@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS"maintenance_rules" (
 	CONSTRAINT "maintenance_rules_asset_type_id_asset_types_id_fk" FOREIGN KEY ("asset_type_id") REFERENCES "asset_types"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"maintenance_tickets" (
+CREATE TABLE IF NOT EXISTS "maintenance_tickets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"rule_id" uuid,
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS"maintenance_tickets" (
 	CONSTRAINT "maintenance_tickets_assigned_to_users_id_fk" FOREIGN KEY ("assigned_to") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"settlements" (
+CREATE TABLE IF NOT EXISTS "settlements" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"operator_id" uuid NOT NULL,
 	"period_start" date NOT NULL,
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS"settlements" (
 	CONSTRAINT "settlements_approved_by_users_id_fk" FOREIGN KEY ("approved_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"cooperative_terms" (
+CREATE TABLE IF NOT EXISTS "cooperative_terms" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"version" integer NOT NULL,
 	"brokerage_pct" numeric(5, 2) NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS"cooperative_terms" (
 	CONSTRAINT "cooperative_terms_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"asset_baselines" (
+CREATE TABLE IF NOT EXISTS "asset_baselines" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid NOT NULL UNIQUE,
 	"avg_flight_hours_per_show" numeric(10, 2),
@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS"asset_baselines" (
 	CONSTRAINT "asset_baselines_asset_id_assets_id_fk" FOREIGN KEY ("asset_id") REFERENCES "assets"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"anomalies" (
+CREATE TABLE IF NOT EXISTS "anomalies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"anomaly_type" varchar(30) NOT NULL,
@@ -257,7 +257,7 @@ CREATE TABLE IF NOT EXISTS"anomalies" (
 	CONSTRAINT "anomalies_reviewed_by_users_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"sponsors" (
+CREATE TABLE IF NOT EXISTS "sponsors" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"logo_url" text,
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS"sponsors" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"booking_sponsors" (
+CREATE TABLE IF NOT EXISTS "booking_sponsors" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"booking_id" uuid NOT NULL,
 	"sponsor_id" uuid NOT NULL,
@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS"booking_sponsors" (
 	CONSTRAINT "booking_sponsors_sponsor_id_sponsors_id_fk" FOREIGN KEY ("sponsor_id") REFERENCES "sponsors"("id") ON DELETE no action ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS"telemetry_syncs" (
+CREATE TABLE IF NOT EXISTS "telemetry_syncs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"asset_id" uuid,
 	"source" varchar(30) NOT NULL,
