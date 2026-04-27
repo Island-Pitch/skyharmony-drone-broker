@@ -64,5 +64,23 @@ services:
       retries: 3
       start_period: 10s
 
+  backup:
+    build: ./scripts/backup
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-skyharmony}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      PGDATABASE: ${POSTGRES_DB:-skyharmony}
+      BACKUP_SCHEDULE: "${BACKUP_SCHEDULE:-0 3 * * *}"
+      RETAIN_DAYS: "${RETAIN_DAYS:-30}"
+      RETAIN_WEEKS: "${RETAIN_WEEKS:-52}"
+    volumes:
+      - backups:/backups
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  backups:
