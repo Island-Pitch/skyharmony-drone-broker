@@ -77,6 +77,29 @@ services:
       - "com.islandpitch.project=skyharmony"
       - "com.islandpitch.role=demo"
 
+  backup:
+    build: ./scripts/backup
+    container_name: skyharmony-backup
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - PGHOST=db
+      - PGUSER=skyharmony
+      - PGPASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      - PGDATABASE=skyharmony
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 3 * * *}
+      - RETAIN_DAYS=${RETAIN_DAYS:-30}
+      - RETAIN_WEEKS=${RETAIN_WEEKS:-52}
+    volumes:
+      - backups:/backups
+    restart: unless-stopped
+    labels:
+      - "com.islandpitch.project=skyharmony"
+      - "com.islandpitch.role=backup"
+
 volumes:
   pgdata:
+    driver: local
+  backups:
     driver: local
