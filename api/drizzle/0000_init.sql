@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS"users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_token" varchar(64);
+--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "reset_token_expires_at" timestamp;
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS"asset_types" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(100) NOT NULL,
