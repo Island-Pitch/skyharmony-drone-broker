@@ -1,6 +1,22 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import fs from 'node:fs';
+import path from 'node:path';
 import pg from 'pg';
+
+function getExpectedMigrationTags(): Set<string> {
+  try {
+    const journalPath = path.resolve(process.cwd(), 'drizzle/meta/_journal.json');
+    const raw = fs.readFileSync(journalPath, 'utf8');
+    const journal = JSON.parse(raw) as { entries?: Array<{ tag?: string }> };
+    const tags = (journal.entries ?? [])
+      .map((e) => e.tag)
+      .filter((t): t is string => typeof t === 'string' && t.length > 0);
+    return new Set(tags);
+  } catch {
+    return new Set();
+  }
+}
 
 async function runMigrations() {
   const pool = new pg.Pool({
@@ -30,11 +46,19 @@ async function runMigrations() {
 
     // If the drizzle schema tracker has stale entries from a previous squash
     // attempt, reset it so the squashed IF NOT EXISTS init replays cleanly
+    const expectedTags = getExpectedMigrationTags();
     const { rows } = await client
-      .query('SELECT COUNT(*)::int AS c FROM drizzle."__drizzle_migrations"')
-      .catch(() => ({ rows: [{ c: 0 }] }));
+      .query('SELECT id FROM drizzle."__drizzle_migrations"')
+      .catch(() => ({ rows: [] as Array<{ id?: unknown }> }));
 
-    if (rows[0].c > 1) {
+    const appliedIds = rows
+      .map((r) => r.id)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    const hasStaleEntries =
+      expectedTags.size > 0 && appliedIds.some((id) => !expectedTags.has(id));
+
+    if (hasStaleEntries) {
       console.log('[migrate] Detected pre-squash migration history, resetting tracker');
       await client.query('TRUNCATE drizzle."__drizzle_migrations"');
     }
