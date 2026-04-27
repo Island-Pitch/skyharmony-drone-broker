@@ -1,5 +1,5 @@
 {
-  "id": "dd5ca601-e404-48ab-b717-9c762373e708",
+  "id": "619ae944-fd62-40bb-a6e0-24b35a52bf03",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1898,6 +1898,18 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "reset_token": {
+          "name": "reset_token",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reset_token_expires_at": {
+          "name": "reset_token_expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

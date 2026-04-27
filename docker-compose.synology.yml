@@ -40,7 +40,7 @@ services:
       - APP_URL=${APP_URL:-https://skyharmony.net}
     command: >
       sh -c "
-        npx drizzle-kit migrate &&
+        node dist/db/migrate.js &&
         if [ \"$$SEED_DATA\" = 'true' ]; then node dist/db/seed.js; fi &&
         node dist/index.js
       "
@@ -50,7 +50,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     labels:
       - "com.islandpitch.project=skyharmony"
       - "com.islandpitch.role=demo"
