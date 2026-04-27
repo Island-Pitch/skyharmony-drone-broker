@@ -39,9 +39,16 @@ BACKUP_FILE="$DAILY_DIR/skyharmony_${TIMESTAMP}.sql.gz"
 
 log "Starting backup to $BACKUP_FILE"
 
+TMP_SQL="$BACKUP_FILE.tmp.sql"
+TMP_GZ="$BACKUP_FILE.tmp.gz"
+rm -f "$TMP_SQL" "$TMP_GZ"
+
 if pg_dump -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" \
   --no-owner --no-privileges --clean --if-exists \
-  | gzip > "$BACKUP_FILE"; then
+  > "$TMP_SQL" \
+  && gzip -c "$TMP_SQL" > "$TMP_GZ" \
+  && mv -f "$TMP_GZ" "$BACKUP_FILE"; then
+  rm -f "$TMP_SQL"
 
   SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
   log "Backup complete: $SIZE"
@@ -66,6 +73,7 @@ EOF
 
 else
   log "ERROR: pg_dump failed"
+  rm -f "$TMP_SQL" "$TMP_GZ"
   cat > "$STATUS_FILE" <<EOF
 status=error
 timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)

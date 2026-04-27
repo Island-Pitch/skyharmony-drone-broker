@@ -53,7 +53,7 @@ log "Restoring from $BACKUP_FILE ($SIZE)"
 log "WARNING: This will overwrite all data in $PGDATABASE"
 
 # Restore
-if gunzip -c "$BACKUP_FILE" | psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" --single-transaction -q; then
+if gunzip -c "$BACKUP_FILE" | psql -v ON_ERROR_STOP=1 -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" --single-transaction -q; then
   log "Restore complete"
 else
   log "ERROR: Restore failed"
