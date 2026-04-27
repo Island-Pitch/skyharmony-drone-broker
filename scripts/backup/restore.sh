@@ -53,7 +53,15 @@ log "Restoring from $BACKUP_FILE ($SIZE)"
 log "WARNING: This will overwrite all data in $PGDATABASE"
 
 # Restore
-if gunzip -c "$BACKUP_FILE" | psql -v ON_ERROR_STOP=1 -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" --single-transaction -q; then
+TMP_SQL="$(mktemp)"
+trap 'rm -f "$TMP_SQL"' EXIT INT TERM
+
+if ! gunzip -c "$BACKUP_FILE" >"$TMP_SQL"; then
+  log "ERROR: Failed to decompress backup file: $BACKUP_FILE"
+  exit 1
+fi
+
+if psql -v ON_ERROR_STOP=1 -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" --single-transaction -q <"$TMP_SQL"; then
   log "Restore complete"
 else
   log "ERROR: Restore failed"
