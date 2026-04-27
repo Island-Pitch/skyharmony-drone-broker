@@ -40,7 +40,7 @@ services:
       - APP_URL=${APP_URL:-https://skyharmony.net}
     command: >
       sh -c "
-        npx drizzle-kit migrate &&
+        node dist/db/migrate.js &&
         if [ \"$$SEED_DATA\" = 'true' ]; then node dist/db/seed.js; fi &&
         node dist/index.js
       "
